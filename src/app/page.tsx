@@ -144,6 +144,38 @@ export default function HomePage() {
     ))}
   </div>
 </section>
+<section id="couple" className="py-20">
+  <div className="rounded-[2rem] bg-slate-950 p-8 text-white md:p-12">
+    <div className="grid items-center gap-10 md:grid-cols-2">
+      <div>
+        <p className="font-semibold text-emerald-300">Dành cho cặp đôi</p>
+
+        <h2 className="mt-3 text-4xl font-bold leading-tight">
+          Cùng nhau quản lý tiền, không còn đoán mò.
+        </h2>
+
+        <p className="mt-5 leading-8 text-slate-300">
+          Douvi giúp hai người ghi nhận thu chi chung, xem báo cáo cùng nhau
+          và hiểu rõ thói quen chi tiêu mà không cần hỏi qua hỏi lại.
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white/10 p-5">
+        <div className="space-y-3">
+          <div className="rounded-2xl bg-white p-4 text-slate-900">
+            💬 Anh vừa đổ xăng 50k
+          </div>
+          <div className="rounded-2xl bg-emerald-400 p-4 font-semibold text-slate-950">
+            🛒 Em đi siêu thị 320k
+          </div>
+          <div className="rounded-2xl bg-white p-4 text-slate-900">
+            💰 Lương tháng này về rồi nha
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
         <footer className="mt-12 border-t border-slate-200 py-8 text-center text-sm text-slate-500">
   <p className="font-semibold text-slate-700">
     Douvi - Ví chat cho cá nhân và cặp đôi
