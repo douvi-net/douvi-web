@@ -120,6 +120,19 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        <footer className="mt-12 border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+  <p className="font-semibold text-slate-700">
+    Douvi - Ví chat cho cá nhân và cặp đôi
+  </p>
+
+  <p className="mt-2">
+    Theo dõi tiền bạc rõ ràng hơn, cùng nhau sống nhẹ nhàng hơn.
+  </p>
+
+  <p className="mt-4">
+    © 2026 Douvi. All rights reserved.
+  </p>
+</footer>
       </section>
     </main>
   );
