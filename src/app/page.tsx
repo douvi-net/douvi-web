@@ -176,6 +176,50 @@ export default function HomePage() {
     </div>
   </div>
 </section>
+<section id="pricing" className="py-20">
+  <div className="mb-10 text-center">
+    <p className="font-semibold text-[#168768]">Gói sử dụng</p>
+    <h2 className="mt-3 text-4xl font-bold text-slate-900">
+      Bắt đầu miễn phí, nâng cấp khi cần nhiều hơn
+    </h2>
+    <p className="mx-auto mt-4 max-w-2xl leading-8 text-slate-500">
+      Douvi ưu tiên trải nghiệm đơn giản trước. Bản Premium sẽ mở khóa thêm các tính năng nâng cao cho cặp đôi.
+    </p>
+  </div>
+
+  <div className="grid gap-6 md:grid-cols-2">
+    <div className="rounded-[2rem] bg-white p-8 shadow-sm">
+      <p className="text-lg font-bold text-slate-900">Miễn phí</p>
+      <p className="mt-3 text-4xl font-bold text-[#168768]">0đ</p>
+      <p className="mt-3 text-slate-500">Phù hợp để bắt đầu quản lý thu chi cá nhân.</p>
+
+      <ul className="mt-6 space-y-3 text-slate-600">
+        <li>✓ Ví cá nhân</li>
+        <li>✓ Ghi thu chi cơ bản</li>
+        <li>✓ Báo cáo đơn giản</li>
+        <li>✓ Đồng bộ dữ liệu cơ bản</li>
+      </ul>
+    </div>
+
+    <div className="relative rounded-[2rem] bg-slate-950 p-8 text-white shadow-xl">
+      <div className="absolute right-6 top-6 rounded-full bg-emerald-400 px-4 py-1 text-sm font-bold text-slate-950">
+        Sắp ra mắt
+      </div>
+
+      <p className="text-lg font-bold">Douvi Hạnh Phúc</p>
+      <p className="mt-3 text-4xl font-bold">49.000đ</p>
+      <p className="mt-3 text-slate-300">Dành cho cặp đôi muốn quản lý tiền bạc cùng nhau.</p>
+
+      <ul className="mt-6 space-y-3 text-slate-300">
+        <li>✓ Ví cặp đôi realtime</li>
+        <li>✓ Ảnh hóa đơn</li>
+        <li>✓ Ghim giao dịch quan trọng</li>
+        <li>✓ Báo cáo tuần/tháng</li>
+        <li>✓ Gợi ý tài chính thông minh</li>
+      </ul>
+    </div>
+  </div>
+</section>
 <section className="py-20">
   <div className="overflow-hidden rounded-[2.5rem] bg-[#168768] p-10 text-white md:p-16">
     <div className="mx-auto max-w-3xl text-center">
