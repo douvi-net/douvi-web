@@ -176,6 +176,33 @@ export default function HomePage() {
     </div>
   </div>
 </section>
+<section className="py-20">
+  <div className="overflow-hidden rounded-[2.5rem] bg-[#168768] p-10 text-white md:p-16">
+    <div className="mx-auto max-w-3xl text-center">
+      <p className="font-semibold uppercase tracking-[0.2em] text-emerald-100">
+        Douvi App
+      </p>
+
+      <h2 className="mt-4 text-4xl font-bold leading-tight md:text-5xl">
+        Bắt đầu quản lý tiền bạc theo cách hiện đại hơn.
+      </h2>
+
+      <p className="mt-6 text-lg leading-8 text-emerald-50">
+        Theo dõi thu chi, quản lý ví cặp đôi và trò chuyện về tiền bạc dễ dàng hơn bao giờ hết.
+      </p>
+
+      <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <button className="rounded-2xl bg-white px-8 py-4 text-lg font-bold text-[#168768] shadow-xl hover:bg-slate-100">
+          Tải cho Android
+        </button>
+
+        <button className="rounded-2xl border border-white/30 bg-white/10 px-8 py-4 text-lg font-bold text-white backdrop-blur-xl hover:bg-white/20">
+          Sắp có trên iOS
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
         <footer className="mt-12 border-t border-slate-200 py-8 text-center text-sm text-slate-500">
   <p className="font-semibold text-slate-700">
     Douvi - Ví chat cho cá nhân và cặp đôi
