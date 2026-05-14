@@ -5,8 +5,22 @@ export default function HomePage() {
       <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-emerald-200/40 blur-3xl" />
 
 <div className="absolute bottom-[-120px] right-[-120px] h-[320px] w-[320px] rounded-full bg-teal-200/40 blur-3xl" />
-        <header className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#168768]">Douvi</div>
+<header className="sticky top-0 z-50 mb-8 flex items-center justify-between rounded-full border border-white/40 bg-white/70 px-5 py-4 backdrop-blur-xl">
+<div className="flex items-center gap-3">
+  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#168768] text-lg font-bold text-white shadow-lg shadow-emerald-200">
+    D
+  </div>
+
+  <div>
+    <h1 className="text-xl font-bold text-[#168768]">
+      Douvi
+    </h1>
+
+    <p className="text-xs text-slate-500">
+      Couple Wallet
+    </p>
+  </div>
+</div>
 
           <nav className="hidden gap-8 text-sm font-medium text-slate-600 md:flex">
             <a href="#features">Tính năng</a>
