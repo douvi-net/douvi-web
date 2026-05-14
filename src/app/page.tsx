@@ -120,6 +120,30 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        <section id="features" className="py-20">
+  <div className="mb-10 text-center">
+    <p className="font-semibold text-[#168768]">Tính năng nổi bật</p>
+    <h2 className="mt-3 text-4xl font-bold text-slate-900">
+      Quản lý tiền như đang nhắn tin
+    </h2>
+  </div>
+
+  <div className="grid gap-5 md:grid-cols-3">
+    {[
+      ["Chat giao dịch", "Ghi thu chi nhanh như nhắn tin hằng ngày."],
+      ["Ví cặp đôi", "Hai người cùng theo dõi tiền bạc realtime."],
+      ["Báo cáo thông minh", "Biết tiền đi đâu và điều chỉnh dễ hơn."],
+    ].map(([title, desc]) => (
+      <div key={title} className="rounded-3xl bg-white p-6 shadow-sm">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E4F7F0] text-xl">
+          ✦
+        </div>
+        <h3 className="text-xl font-bold">{title}</h3>
+        <p className="mt-3 leading-7 text-slate-500">{desc}</p>
+      </div>
+    ))}
+  </div>
+</section>
         <footer className="mt-12 border-t border-slate-200 py-8 text-center text-sm text-slate-500">
   <p className="font-semibold text-slate-700">
     Douvi - Ví chat cho cá nhân và cặp đôi
