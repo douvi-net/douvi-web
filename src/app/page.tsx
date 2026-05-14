@@ -1,7 +1,10 @@
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#F6F8F7] text-slate-900">
-      <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
+    <main className="min-h-screen overflow-hidden bg-[#F6F8F7] text-slate-900">
+      <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
+      <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-emerald-200/40 blur-3xl" />
+
+<div className="absolute bottom-[-120px] right-[-120px] h-[320px] w-[320px] rounded-full bg-teal-200/40 blur-3xl" />
         <header className="flex items-center justify-between">
           <div className="text-2xl font-bold text-[#168768]">Douvi</div>
 
