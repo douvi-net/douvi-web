@@ -6,6 +6,8 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { DouviWallet, getUserWallets } from "@/lib/wallets";
 import { DouviTransaction, observeWalletTransactions } from "@/lib/transactions";
 import { ChatBubble } from "@/components/ChatBubble";
+import { ChatComposer } from "@/components/ChatComposer";
+import { sendTransaction } from "@/lib/sendTransaction";
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
@@ -154,7 +156,13 @@ export default function HomePage() {
               />
             )}
 
-            {activeTab === "chat" && <ChatTab transactions={transactions} />}
+{activeTab === "chat" && (
+  <ChatTab
+    user={user}
+    selectedWalletId={selectedWalletId}
+    transactions={transactions}
+  />
+)}
             {activeTab === "summary" && <SummaryTab transactions={transactions} />}
             {activeTab === "settings" && <SettingsTab user={user} />}
           </div>
@@ -267,12 +275,34 @@ function HomeTab({
   );
 }
 
-function ChatTab({ transactions }: { transactions: DouviTransaction[] }) {
+function ChatTab({
+  user,
+  selectedWalletId,
+  transactions,
+}: {
+  user: User;
+  selectedWalletId: string;
+  transactions: DouviTransaction[];
+}) {
   return (
     <div>
       <h2 className="text-3xl font-black">Ví Chat</h2>
+
       <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
         <TransactionList transactions={transactions} />
+
+        {selectedWalletId && (
+          <ChatComposer
+            onSend={async (text) => {
+              await sendTransaction({
+                walletId: selectedWalletId,
+                text,
+                uid: user.uid,
+                displayName: user.displayName || "Người dùng",
+              });
+            }}
+          />
+        )}
       </div>
     </div>
   );
