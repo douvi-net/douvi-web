@@ -1,8 +1,10 @@
 "use client";
 
 import { onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
 import { useEffect, useState } from "react";
+import { auth, googleProvider } from "@/lib/firebase";
+import { DouviWallet, getUserWallets } from "@/lib/wallets";
+import { DouviTransaction, observeWalletTransactions } from "@/lib/transactions";
 
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
@@ -16,11 +18,51 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("home");
   const [loading, setLoading] = useState(false);
 
+  const [wallets, setWallets] = useState<DouviWallet[]>([]);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [selectedWalletId, setSelectedWalletId] = useState("");
+  const [transactions, setTransactions] = useState<DouviTransaction[]>([]);
+
   useEffect(() => {
-    return onAuthStateChanged(auth, (firebaseUser) => {
+    return onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+
+      if (!firebaseUser) {
+        setWallets([]);
+        setSelectedWalletId("");
+        setTransactions([]);
+        return;
+      }
+
+      try {
+        setWalletLoading(true);
+        const userWallets = await getUserWallets(firebaseUser.uid);
+        setWallets(userWallets);
+
+        if (userWallets.length > 0) {
+          setSelectedWalletId(userWallets[0].walletId);
+        }
+      } catch (error) {
+        console.error(error);
+        setWallets([]);
+      } finally {
+        setWalletLoading(false);
+      }
     });
   }, []);
+
+  useEffect(() => {
+    if (!selectedWalletId) {
+      setTransactions([]);
+      return;
+    }
+
+    const unsubscribe = observeWalletTransactions(selectedWalletId, (items) => {
+      setTransactions(items);
+    });
+
+    return () => unsubscribe();
+  }, [selectedWalletId]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -101,9 +143,19 @@ export default function HomePage() {
           </header>
 
           <div className="flex-1 p-5 pb-24 md:p-8">
-            {activeTab === "home" && <HomeTab user={user} />}
-            {activeTab === "chat" && <ChatTab />}
-            {activeTab === "summary" && <SummaryTab />}
+            {activeTab === "home" && (
+              <HomeTab
+                user={user}
+                wallets={wallets}
+                walletLoading={walletLoading}
+                selectedWalletId={selectedWalletId}
+                onSelectWallet={setSelectedWalletId}
+                transactions={transactions}
+              />
+            )}
+
+            {activeTab === "chat" && <ChatTab transactions={transactions} />}
+            {activeTab === "summary" && <SummaryTab transactions={transactions} />}
             {activeTab === "settings" && <SettingsTab user={user} />}
           </div>
 
@@ -127,38 +179,117 @@ export default function HomePage() {
   );
 }
 
-function HomeTab({ user }: { user: User }) {
+function HomeTab({
+  user,
+  wallets,
+  walletLoading,
+  selectedWalletId,
+  onSelectWallet,
+  transactions,
+}: {
+  user: User;
+  wallets: DouviWallet[];
+  walletLoading: boolean;
+  selectedWalletId: string;
+  onSelectWallet: (walletId: string) => void;
+  transactions: DouviTransaction[];
+}) {
+  const activeWallet = wallets.find((wallet) => wallet.walletId === selectedWalletId) || wallets[0];
+
+  const totalExpense = transactions
+    .filter((item) => item.type === "EXPENSE")
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  const totalIncome = transactions
+    .filter((item) => item.type === "INCOME")
+    .reduce((sum, item) => sum + item.amount, 0);
+
   return (
     <div>
       <h2 className="text-3xl font-black">Trang chủ Douvi</h2>
-      <p className="mt-2 text-slate-500">Bước tiếp theo sẽ đồng bộ ví từ Android sang Web.</p>
+      <p className="mt-2 text-slate-500">Dữ liệu ví và giao dịch đang đọc trực tiếp từ Firestore.</p>
 
       <div className="mt-6 grid gap-5 md:grid-cols-3">
-        <Card title="Ví hiện tại" value="Chưa tải" desc="Sẽ lấy từ Firestore" />
-        <Card title="Giao dịch hôm nay" value="0đ" desc="Realtime từ ví chung" />
-        <Card title="Trạng thái" value="Online" desc={user.email || ""} />
+        <Card
+          title="Ví hiện tại"
+          value={walletLoading ? "Đang tải..." : activeWallet?.name || "Chưa có ví"}
+          desc={activeWallet?.type === "couple" ? "Ví cặp đôi" : "Ví cá nhân"}
+        />
+        <Card title="Tổng thu" value={`${totalIncome.toLocaleString("vi-VN")}đ`} desc="Realtime từ ví đã chọn" />
+        <Card title="Tổng chi" value={`${totalExpense.toLocaleString("vi-VN")}đ`} desc={user.email || ""} />
       </div>
+
+      <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
+        <h3 className="text-2xl font-black">Danh sách ví</h3>
+
+        {walletLoading ? (
+          <p className="mt-4 text-slate-500">Đang tải ví...</p>
+        ) : wallets.length === 0 ? (
+          <p className="mt-4 text-slate-500">Tài khoản này chưa có ví hoặc chưa được thêm vào ví nào.</p>
+        ) : (
+          <div className="mt-5 space-y-3">
+            {wallets.map((wallet) => (
+              <div
+                key={wallet.walletId}
+                onClick={() => onSelectWallet(wallet.walletId)}
+                className={`cursor-pointer rounded-2xl border p-4 ${
+                  selectedWalletId === wallet.walletId
+                    ? "border-[#168768] bg-[#E4F7F0]"
+                    : "border-slate-100 bg-[#F6F8F7]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-black">{wallet.name}</p>
+                    <p className="text-sm text-slate-500">
+                      {wallet.type === "couple" ? "Ví cặp đôi" : "Ví cá nhân"} • {wallet.memberIds.length} thành viên
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-[#168768]">
+                    {selectedWalletId === wallet.walletId ? "Đang chọn" : "Chọn"}
+                  </span>
+                </div>
+
+                {wallet.inviteCode && (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Mã mời: <b>{wallet.inviteCode}</b>
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <TransactionList transactions={transactions} />
     </div>
   );
 }
 
-function ChatTab() {
+function ChatTab({ transactions }: { transactions: DouviTransaction[] }) {
   return (
     <div>
       <h2 className="text-3xl font-black">Ví Chat</h2>
       <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-        <p className="text-slate-500">Sắp kết nối realtime transactions từ Android.</p>
+        <TransactionList transactions={transactions} />
       </div>
     </div>
   );
 }
 
-function SummaryTab() {
+function SummaryTab({ transactions }: { transactions: DouviTransaction[] }) {
+  const expense = transactions.filter((item) => item.type === "EXPENSE").reduce((sum, item) => sum + item.amount, 0);
+  const income = transactions.filter((item) => item.type === "INCOME").reduce((sum, item) => sum + item.amount, 0);
+
   return (
     <div>
       <h2 className="text-3xl font-black">Tổng quan</h2>
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-        <p className="text-slate-500">Sắp hiển thị báo cáo thu chi, danh mục, người chi.</p>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-3">
+        <Card title="Thu nhập" value={`${income.toLocaleString("vi-VN")}đ`} desc="Tổng thu" />
+        <Card title="Chi tiêu" value={`${expense.toLocaleString("vi-VN")}đ`} desc="Tổng chi" />
+        <Card title="Số dư" value={`${(income - expense).toLocaleString("vi-VN")}đ`} desc="Thu - chi" />
       </div>
     </div>
   );
@@ -169,10 +300,44 @@ function SettingsTab({ user }: { user: User }) {
     <div>
       <h2 className="text-3xl font-black">Cài đặt</h2>
       <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-        <img src={user.photoURL || ""} alt="" className="h-20 w-20 rounded-full" />
+        {user.photoURL && <img src={user.photoURL} alt="" className="h-20 w-20 rounded-full" />}
         <h3 className="mt-4 text-2xl font-black">{user.displayName}</h3>
         <p className="text-slate-500">{user.email}</p>
       </div>
+    </div>
+  );
+}
+
+function TransactionList({ transactions }: { transactions: DouviTransaction[] }) {
+  return (
+    <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
+      <h3 className="text-2xl font-black">Giao dịch realtime</h3>
+
+      {transactions.length === 0 ? (
+        <p className="mt-4 text-slate-500">Ví này chưa có giao dịch hoặc đang tải dữ liệu.</p>
+      ) : (
+        <div className="mt-5 space-y-3">
+          {transactions.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-slate-100 bg-[#F6F8F7] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-black">{item.note || "Giao dịch"}</p>
+                  <p className="text-sm text-slate-500">
+                    {item.createdByName} • {item.category || "khác"}
+                  </p>
+                </div>
+
+                {item.type !== "MESSAGE" && (
+                  <p className={`font-black ${item.type === "INCOME" ? "text-[#168768]" : "text-red-500"}`}>
+                    {item.type === "INCOME" ? "+" : "-"}
+                    {item.amount.toLocaleString("vi-VN")}đ
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
