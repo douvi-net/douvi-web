@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
 import { DouviWallet, getUserWallets } from "@/lib/wallets";
 import { DouviTransaction, observeWalletTransactions } from "@/lib/transactions";
-
+import { ChatBubble } from "@/components/ChatBubble";
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
@@ -310,31 +310,21 @@ function SettingsTab({ user }: { user: User }) {
 
 function TransactionList({ transactions }: { transactions: DouviTransaction[] }) {
   return (
-    <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
-      <h3 className="text-2xl font-black">Giao dịch realtime</h3>
+    <div className="mt-8 rounded-[2rem] bg-white p-4 shadow-sm">
+      <h3 className="px-2 text-2xl font-black">Ví Chat realtime</h3>
 
       {transactions.length === 0 ? (
-        <p className="mt-4 text-slate-500">Ví này chưa có giao dịch hoặc đang tải dữ liệu.</p>
+        <p className="mt-4 px-2 text-slate-500">
+          Ví này chưa có giao dịch hoặc đang tải dữ liệu.
+        </p>
       ) : (
-        <div className="mt-5 space-y-3">
-          {transactions.map((item) => (
-            <div key={item.id} className="rounded-2xl border border-slate-100 bg-[#F6F8F7] p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-black">{item.note || "Giao dịch"}</p>
-                  <p className="text-sm text-slate-500">
-                    {item.createdByName} • {item.category || "khác"}
-                  </p>
-                </div>
-
-                {item.type !== "MESSAGE" && (
-                  <p className={`font-black ${item.type === "INCOME" ? "text-[#168768]" : "text-red-500"}`}>
-                    {item.type === "INCOME" ? "+" : "-"}
-                    {item.amount.toLocaleString("vi-VN")}đ
-                  </p>
-                )}
-              </div>
-            </div>
+        <div className="mt-5 space-y-4 rounded-[1.5rem] bg-[#F6F8F7] p-4">
+          {[...transactions].reverse().map((item) => (
+            <ChatBubble
+              key={item.id}
+              item={item}
+              isMine={false}
+            />
           ))}
         </div>
       )}
