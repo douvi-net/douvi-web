@@ -332,7 +332,10 @@ function SettingsTab({ user }: { user: User }) {
       <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
         {user.photoURL && <img src={user.photoURL} alt="" className="h-20 w-20 rounded-full" />}
         <h3 className="mt-4 text-2xl font-black">{user.displayName}</h3>
-        <p className="text-slate-500">{user.email}</p>
+<p className="text-slate-500">{user.email}</p>
+<p className="mt-2 break-all text-sm text-slate-400">
+  UID: {user.uid}
+</p>
       </div>
     </div>
   );
