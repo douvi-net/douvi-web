@@ -20,6 +20,8 @@ import {
     createdByName: string;
     imagePath?: string;
     isPinned?: boolean;
+    reactions?: Record<string, string>;
+createdByUid?: string;
   };
   
   export function observeWalletTransactions(
@@ -49,6 +51,8 @@ import {
           createdByName: data.createdByName || "Người dùng",
           imagePath: data.imagePath || "",
           isPinned: data.isPinned || false,
+          createdByUid: data.createdByUid || "",
+reactions: data.reactions || {},
         };
       });
   

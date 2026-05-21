@@ -1,4 +1,5 @@
 import { DouviTransaction } from "@/lib/transactions";
+import { setTransactionReaction } from "@/lib/reactions";
 
 function formatMoney(amount: number, type: string) {
   const prefix = type === "INCOME" ? "+" : "-";
@@ -11,33 +12,34 @@ function paymentLabel(method: string) {
   return "💵 Tiền mặt";
 }
 
-function reactionEmoji(reaction?: string) {
-  if (!reaction) return "";
+function reactionEmoji(reactions?: Record<string, string>) {
+  if (!reactions) return "";
 
-  try {
-    const parsed = JSON.parse(reaction);
-    const first = Object.values(parsed)[0];
+  const first = Object.values(reactions)[0];
 
-    if (first === "LIKE") return "👍";
-    if (first === "HAHA") return "😂";
-    if (first === "WOW") return "😮";
-    if (first === "ANGRY") return "😡";
-    return "❤️";
-  } catch {
-    return "❤️";
-  }
+  if (first === "LIKE") return "👍";
+  if (first === "HAHA") return "😂";
+  if (first === "WOW") return "😮";
+  if (first === "ANGRY") return "😡";
+  if (first === "LOVE") return "❤️";
+
+  return "";
 }
 
 export function ChatBubble({
   item,
   isMine,
+  walletId,
+  currentUid,
 }: {
   item: DouviTransaction;
   isMine: boolean;
+  walletId: string;
+  currentUid: string;
 }) {
   const isMoney = item.amount > 0;
   const isIncome = item.type === "INCOME";
-  const emoji = reactionEmoji((item as any).reactions);
+  const emoji = reactionEmoji(item.reactions);
 
   return (
     <div className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
@@ -89,8 +91,34 @@ export function ChatBubble({
                   {formatMoney(item.amount, item.type)}
                 </p>
               </div>
+              
             )}
-
+<div className="mt-3 flex gap-2">
+  {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
+    <button
+      key={reaction}
+      onClick={() =>
+        setTransactionReaction({
+          walletId,
+          transactionId: item.id,
+          uid: currentUid,
+          reaction: reaction as any,
+        })
+      }
+      className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110"
+    >
+      {reaction === "LOVE"
+        ? "❤️"
+        : reaction === "LIKE"
+        ? "👍"
+        : reaction === "HAHA"
+        ? "😂"
+        : reaction === "WOW"
+        ? "😮"
+        : "😡"}
+    </button>
+  ))}
+</div>
             {item.type === "MESSAGE" && (
               <p className="mt-2 text-sm text-slate-500">Tin nhắn</p>
             )}

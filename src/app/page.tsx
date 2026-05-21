@@ -270,7 +270,11 @@ function HomeTab({
         )}
       </div>
 
-      <TransactionList transactions={transactions} />
+      <TransactionList
+  transactions={transactions}
+  walletId={selectedWalletId}
+  currentUid={user.uid}
+/>
     </div>
   );
 }
@@ -289,7 +293,11 @@ function ChatTab({
       <h2 className="text-3xl font-black">Ví Chat</h2>
 
       <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-        <TransactionList transactions={transactions} />
+      <TransactionList
+  transactions={transactions}
+  walletId={selectedWalletId}
+  currentUid={user.uid}
+/>
 
         {selectedWalletId && (
           <ChatComposer
@@ -341,7 +349,15 @@ function SettingsTab({ user }: { user: User }) {
   );
 }
 
-function TransactionList({ transactions }: { transactions: DouviTransaction[] }) {
+function TransactionList({
+  transactions,
+  walletId,
+  currentUid,
+}: {
+  transactions: DouviTransaction[];
+  walletId: string;
+  currentUid: string;
+}) {
   return (
     <div className="mt-8 rounded-[2rem] bg-white p-4 shadow-sm">
       <h3 className="px-2 text-2xl font-black">Ví Chat realtime</h3>
@@ -353,11 +369,13 @@ function TransactionList({ transactions }: { transactions: DouviTransaction[] })
       ) : (
         <div className="mt-5 space-y-4 rounded-[1.5rem] bg-[#F6F8F7] p-4">
           {[...transactions].reverse().map((item) => (
-            <ChatBubble
-              key={item.id}
-              item={item}
-              isMine={false}
-            />
+           <ChatBubble
+           key={item.id}
+           item={item}
+           isMine={item.createdByUid === currentUid}
+           walletId={walletId}
+           currentUid={currentUid}
+         />
           ))}
         </div>
       )}
