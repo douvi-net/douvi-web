@@ -3,6 +3,25 @@ import { db } from "@/lib/firebase";
 
 export type ReactionCode = "LIKE" | "LOVE" | "HAHA" | "WOW" | "ANGRY";
 
+function parseReactions(value: unknown): Record<string, string> {
+  if (!value) return {};
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, string>;
+  }
+
+  return {};
+}
+
 export async function setTransactionReaction({
   walletId,
   transactionId,
@@ -14,34 +33,12 @@ export async function setTransactionReaction({
   uid: string;
   reaction: ReactionCode;
 }) {
-  if (!walletId || !transactionId || !uid) {
-    console.warn("Missing reaction params", {
-      walletId,
-      transactionId,
-      uid,
-      reaction,
-    });
-    return;
-  }
+  if (!walletId || !transactionId || !uid) return;
 
   const ref = doc(db, "wallets", walletId, "transactions", transactionId);
   const snap = await getDoc(ref);
-  const current = snap.data()?.reactions;
 
-  let reactionMap: Record<string, string> = {};
-
-  if (typeof current === "string" && current.trim()) {
-    try {
-      reactionMap = JSON.parse(current);
-    } catch {
-      reactionMap = {};
-    }
-  }
-
-  if (current && typeof current === "object" && !Array.isArray(current)) {
-    reactionMap = current as Record<string, string>;
-  }
-
+  const reactionMap = parseReactions(snap.data()?.reactions);
   reactionMap[uid] = reaction;
 
   await updateDoc(ref, {

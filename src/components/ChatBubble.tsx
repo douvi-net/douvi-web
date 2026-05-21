@@ -12,21 +12,19 @@ function paymentLabel(method: string) {
   return "💵 Tiền mặt";
 }
 
-function reactionEmoji(reactions?: string | Record<string, string>) {
-  if (!reactions) return "";
+function parseReactionMap(reactions?: string | null): Record<string, string> {
+  if (!reactions) return {};
 
-  let map: Record<string, string> = {};
-
-  if (typeof reactions === "string") {
-    try {
-      map = JSON.parse(reactions);
-    } catch {
-      return "";
-    }
-  } else {
-    map = reactions;
+  try {
+    const parsed = JSON.parse(reactions);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
   }
+}
 
+function reactionEmoji(reactions?: string | null) {
+  const map = parseReactionMap(reactions);
   const first = Object.values(map)[0];
 
   if (first === "LIKE") return "👍";
@@ -103,37 +101,38 @@ export function ChatBubble({
                   {formatMoney(item.amount, item.type)}
                 </p>
               </div>
-              
             )}
-<div className="mt-3 flex gap-2">
-  {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
-    <button
-      key={reaction}
-      onClick={() =>
-        setTransactionReaction({
-          walletId,
-          transactionId: item.id,
-          uid: currentUid,
-          reaction: reaction as any,
-        })
-      }
-      className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110"
-    >
-      {reaction === "LOVE"
-        ? "❤️"
-        : reaction === "LIKE"
-        ? "👍"
-        : reaction === "HAHA"
-        ? "😂"
-        : reaction === "WOW"
-        ? "😮"
-        : "😡"}
-    </button>
-  ))}
-</div>
+
             {item.type === "MESSAGE" && (
               <p className="mt-2 text-sm text-slate-500">Tin nhắn</p>
             )}
+
+            <div className="mt-3 flex gap-2">
+              {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
+                <button
+                  key={reaction}
+                  onClick={() =>
+                    setTransactionReaction({
+                      walletId,
+                      transactionId: item.id,
+                      uid: currentUid,
+                      reaction: reaction as any,
+                    })
+                  }
+                  className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110"
+                >
+                  {reaction === "LOVE"
+                    ? "❤️"
+                    : reaction === "LIKE"
+                    ? "👍"
+                    : reaction === "HAHA"
+                    ? "😂"
+                    : reaction === "WOW"
+                    ? "😮"
+                    : "😡"}
+                </button>
+              ))}
+            </div>
           </div>
 
           {emoji && (
