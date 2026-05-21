@@ -12,10 +12,22 @@ function paymentLabel(method: string) {
   return "💵 Tiền mặt";
 }
 
-function reactionEmoji(reactions?: Record<string, string>) {
+function reactionEmoji(reactions?: string | Record<string, string>) {
   if (!reactions) return "";
 
-  const first = Object.values(reactions)[0];
+  let map: Record<string, string> = {};
+
+  if (typeof reactions === "string") {
+    try {
+      map = JSON.parse(reactions);
+    } catch {
+      return "";
+    }
+  } else {
+    map = reactions;
+  }
+
+  const first = Object.values(map)[0];
 
   if (first === "LIKE") return "👍";
   if (first === "HAHA") return "😂";

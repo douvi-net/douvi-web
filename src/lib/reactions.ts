@@ -1,4 +1,4 @@
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export type ReactionCode = "LIKE" | "LOVE" | "HAHA" | "WOW" | "ANGRY";
@@ -25,9 +25,27 @@ export async function setTransactionReaction({
   }
 
   const ref = doc(db, "wallets", walletId, "transactions", transactionId);
+  const snap = await getDoc(ref);
+  const current = snap.data()?.reactions;
+
+  let reactionMap: Record<string, string> = {};
+
+  if (typeof current === "string" && current.trim()) {
+    try {
+      reactionMap = JSON.parse(current);
+    } catch {
+      reactionMap = {};
+    }
+  }
+
+  if (current && typeof current === "object" && !Array.isArray(current)) {
+    reactionMap = current as Record<string, string>;
+  }
+
+  reactionMap[uid] = reaction;
 
   await updateDoc(ref, {
-    [`reactions.${uid}`]: reaction,
+    reactions: JSON.stringify(reactionMap),
     updatedAt: Date.now(),
   });
 }
