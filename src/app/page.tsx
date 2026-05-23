@@ -369,13 +369,13 @@ function TransactionList({
       ) : (
         <div className="mt-5 space-y-4 rounded-[1.5rem] bg-[#F6F8F7] p-4">
           {[...transactions].reverse().map((item) => (
-           <ChatBubble
-           key={item.id}
-           item={item}
-           isMine={item.createdByUid === currentUid}
-           walletId={walletId}
-           currentUid={currentUid}
-         />
+         <ChatBubble
+         key={item.id}
+         item={item}
+         isMine={item.createdByUid === currentUid}
+         walletId={walletId}
+         currentUid={currentUid}
+       />
           ))}
         </div>
       )}

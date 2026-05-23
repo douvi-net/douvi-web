@@ -44,19 +44,38 @@ function extractAmount(text: string) {
 function detectCategory(text: string) {
   const lower = normalizeText(text);
 
-  if (lower.includes("ăn") || lower.includes("uống") || lower.includes("cafe") || lower.includes("cà phê")) {
+  if (
+    lower.includes("ăn") ||
+    lower.includes("uống") ||
+    lower.includes("cafe") ||
+    lower.includes("cà phê")
+  ) {
     return "Ăn uống";
   }
 
-  if (lower.includes("xăng") || lower.includes("grab") || lower.includes("taxi") || lower.includes("xe")) {
+  if (
+    lower.includes("xăng") ||
+    lower.includes("grab") ||
+    lower.includes("taxi") ||
+    lower.includes("xe")
+  ) {
     return "Di chuyển";
   }
 
-  if (lower.includes("chợ") || lower.includes("siêu thị") || lower.includes("mua đồ")) {
+  if (
+    lower.includes("chợ") ||
+    lower.includes("siêu thị") ||
+    lower.includes("mua đồ")
+  ) {
     return "Gia đình";
   }
 
-  if (lower.includes("điện") || lower.includes("nước") || lower.includes("wifi") || lower.includes("nhà")) {
+  if (
+    lower.includes("điện") ||
+    lower.includes("nước") ||
+    lower.includes("wifi") ||
+    lower.includes("nhà")
+  ) {
     return "Hóa đơn";
   }
 
@@ -70,11 +89,20 @@ function detectCategory(text: string) {
 function detectPaymentMethod(text: string) {
   const lower = normalizeText(text);
 
-  if (lower.includes("bank") || lower.includes("chuyển khoản") || lower.includes("ck") || lower.includes("qr")) {
+  if (
+    lower.includes("bank") ||
+    lower.includes("chuyển khoản") ||
+    lower.includes("ck") ||
+    lower.includes("qr")
+  ) {
     return "bank";
   }
 
-  if (lower.includes("momo") || lower.includes("zalopay") || lower.includes("ví điện tử")) {
+  if (
+    lower.includes("momo") ||
+    lower.includes("zalopay") ||
+    lower.includes("ví điện tử")
+  ) {
     return "ewallet";
   }
 
@@ -92,6 +120,8 @@ export async function sendTransaction({
   uid: string;
   displayName: string;
 }) {
+  if (!walletId || !uid) return;
+
   const now = Date.now();
   const transactionId = now;
 
@@ -99,24 +129,23 @@ export async function sendTransaction({
   const amount = extractAmount(cleanText);
   const type = amount > 0 ? detectType(cleanText) : "MESSAGE";
 
-  await setDoc(doc(db, "wallets", walletId, "transactions", String(transactionId)), {
+  const payload = {
     transactionId,
     walletId,
     type,
     amount,
     category: type === "MESSAGE" ? "" : detectCategory(cleanText),
     note: cleanText,
-    comment: null,
-    commentBy: null,
-    reactions: null,
-    imagePath: null,
-    replyToId: null,
-    replyPreview: null,
     paymentMethod: detectPaymentMethod(cleanText),
     isPinned: false,
     createdAt: now,
     updatedAt: now,
     createdByUid: uid,
     createdByName: displayName || "Người dùng",
-  });
+  };
+
+  await setDoc(
+    doc(db, "wallets", walletId, "transactions", String(transactionId)),
+    payload
+  );
 }
