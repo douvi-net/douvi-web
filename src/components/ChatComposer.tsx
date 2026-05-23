@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { douvi } from "@/lib/douviTheme";
 
 export function ChatComposer({
   onSend,
@@ -9,6 +10,8 @@ export function ChatComposer({
 }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const quickTexts = ["ăn uống 50k", "xăng xe 100k", "đi chợ 100k", "hóa đơn 500k"];
 
   async function handleSend() {
     const clean = text.trim();
@@ -24,13 +27,37 @@ export function ChatComposer({
   }
 
   return (
-    <div className="sticky bottom-0 border-t border-slate-100 bg-white/95 p-3 backdrop-blur">
-      <div className="flex items-center gap-2 rounded-full bg-[#F6F8F7] p-2">
+    <div
+      className="border-t px-3 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2"
+      style={{ backgroundColor: douvi.background, borderColor: douvi.border }}
+    >
+      <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
+        {quickTexts.map((item) => (
+          <button
+            key={item}
+            onClick={() => setText(item)}
+            className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-bold shadow-sm"
+            style={{ color: douvi.textPrimary }}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl font-bold"
+          style={{ backgroundColor: douvi.primarySoft, color: douvi.primary }}
+        >
+          +
+        </button>
+
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Gõ: ăn sáng 50k, nhận lương 10tr..."
-          className="h-11 flex-1 bg-transparent px-3 text-[15px] outline-none"
+          placeholder="Gõ tự nhiên: ăn sáng 50k..."
+          className="h-10 flex-1 rounded-full px-4 text-sm outline-none"
+          style={{ backgroundColor: douvi.surfaceSoft, color: douvi.textPrimary }}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSend();
           }}
@@ -39,7 +66,8 @@ export function ChatComposer({
         <button
           onClick={handleSend}
           disabled={loading || !text.trim()}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-[#168768] font-bold text-white disabled:opacity-40"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white disabled:opacity-40"
+          style={{ backgroundColor: douvi.primary }}
         >
           {loading ? "…" : "➤"}
         </button>
