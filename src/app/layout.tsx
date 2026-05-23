@@ -13,31 +13,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Douvi - Ví chat cho cá nhân và cặp đôi",
-  description:
-    "Douvi giúp cá nhân và cặp đôi ghi thu chi như đang nhắn tin, đồng bộ realtime và quản lý tiền bạc nhẹ nhàng hơn.",
-  keywords: [
-    "Douvi",
-    "ví cặp đôi",
-    "quản lý chi tiêu",
-    "app quản lý tiền",
-    "ví chat",
-    "theo dõi thu chi",
-  ],
-  openGraph: {
-    title: "Douvi - Ví chat cho cá nhân và cặp đôi",
-    description:
-      "Theo dõi thu chi, quản lý ví cặp đôi và hiểu nhau hơn qua từng giao dịch.",
-    url: "https://douvi.net",
-    siteName: "Douvi",
-    type: "website",
-    locale: "vi_VN",
+  title: "Douvi",
+  description: "Ví cặp đôi realtime",
+  manifest: "/manifest.json",
+  themeColor: "#168768",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Douvi",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Douvi - Ví chat cho cá nhân và cặp đôi",
-    description:
-      "Ứng dụng ví chat giúp cá nhân và cặp đôi quản lý tiền bạc rõ ràng hơn.",
+  icons: {
+    apple: "/icon-192.png",
+    icon: "/icon-192.png",
   },
 };
 
