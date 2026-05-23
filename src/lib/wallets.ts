@@ -1,4 +1,11 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export type DouviWallet = {
@@ -11,8 +18,6 @@ export type DouviWallet = {
 };
 
 export async function getUserWallets(uid: string): Promise<DouviWallet[]> {
-  console.log("WEB UID:", uid);
-
   const q = query(
     collection(db, "wallets"),
     where("memberIds", "array-contains", uid)
@@ -20,12 +25,8 @@ export async function getUserWallets(uid: string): Promise<DouviWallet[]> {
 
   const snapshot = await getDocs(q);
 
-  console.log("WALLETS FOUND:", snapshot.size);
-
   return snapshot.docs.map((walletDoc) => {
     const data = walletDoc.data();
-
-    console.log("WALLET DATA:", walletDoc.id, data);
 
     return {
       walletId: walletDoc.id,
@@ -36,4 +37,48 @@ export async function getUserWallets(uid: string): Promise<DouviWallet[]> {
       inviteCode: data.inviteCode || "",
     };
   });
+}
+
+export async function createPersonalWallet({
+  uid,
+  displayName,
+}: {
+  uid: string;
+  displayName: string;
+}) {
+  const now = Date.now();
+  const walletRef = doc(collection(db, "wallets"));
+  const walletId = walletRef.id;
+
+  await setDoc(walletRef, {
+    name: "Ví cá nhân của tôi",
+    inviteCode: "",
+    ownerId: uid,
+    memberIds: [uid],
+    createdAt: now,
+    type: "personal",
+    goalName: "",
+    goalTarget: 0,
+    goalSaved: 0,
+  });
+
+  await setDoc(doc(db, "wallets", walletId, "members", uid), {
+    userId: uid,
+    displayName: displayName || "Người dùng",
+    avatarUrl: "",
+    role: "owner",
+    joinedAt: now,
+  });
+
+  await setDoc(
+    doc(db, "users", uid),
+    {
+      displayName: displayName || "Người dùng",
+      activeWalletId: walletId,
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  return walletId;
 }

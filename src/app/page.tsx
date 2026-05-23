@@ -8,6 +8,7 @@ import { DouviTransaction, observeWalletTransactions } from "@/lib/transactions"
 import { ChatBubble } from "@/components/ChatBubble";
 import { ChatComposer } from "@/components/ChatComposer";
 import { sendTransaction } from "@/lib/sendTransaction";
+import { createPersonalWallet } from "@/lib/wallets";
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
@@ -77,7 +78,27 @@ export default function HomePage() {
       setLoading(false);
     }
   };
-
+  const handleCreatePersonalWallet = async () => {
+    if (!user) return;
+  
+    try {
+      setWalletLoading(true);
+  
+      await createPersonalWallet({
+        uid: user.uid,
+        displayName: user.displayName || "Người dùng",
+      });
+  
+      const userWallets = await getUserWallets(user.uid);
+      setWallets(userWallets);
+  
+      if (userWallets.length > 0) {
+        setSelectedWalletId(userWallets[0].walletId);
+      }
+    } finally {
+      setWalletLoading(false);
+    }
+  };
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F6F8F7] p-6">
@@ -153,6 +174,7 @@ export default function HomePage() {
                 selectedWalletId={selectedWalletId}
                 onSelectWallet={setSelectedWalletId}
                 transactions={transactions}
+                onCreatePersonalWallet={handleCreatePersonalWallet}
               />
             )}
 
@@ -194,12 +216,14 @@ function HomeTab({
   selectedWalletId,
   onSelectWallet,
   transactions,
+  onCreatePersonalWallet,
 }: {
   user: User;
   wallets: DouviWallet[];
   walletLoading: boolean;
   selectedWalletId: string;
   onSelectWallet: (walletId: string) => void;
+  onCreatePersonalWallet: () => Promise<void>;
   transactions: DouviTransaction[];
 }) {
   const activeWallet = wallets.find((wallet) => wallet.walletId === selectedWalletId) || wallets[0];
@@ -233,8 +257,19 @@ function HomeTab({
         {walletLoading ? (
           <p className="mt-4 text-slate-500">Đang tải ví...</p>
         ) : wallets.length === 0 ? (
-          <p className="mt-4 text-slate-500">Tài khoản này chưa có ví hoặc chưa được thêm vào ví nào.</p>
-        ) : (
+          <div className="mt-4 rounded-2xl bg-[#F6F8F7] p-5">
+            <p className="text-slate-500">
+              Tài khoản này chưa có ví. Tạo ví cá nhân để bắt đầu dùng Douvi Web.
+            </p>
+        
+            <button
+              onClick={onCreatePersonalWallet}
+              className="mt-4 rounded-2xl bg-[#168768] px-5 py-3 font-bold text-white hover:bg-[#0F6F55]"
+            >
+              Tạo ví cá nhân
+            </button>
+          </div>
+        ): (
           <div className="mt-5 space-y-3">
             {wallets.map((wallet) => (
               <div
