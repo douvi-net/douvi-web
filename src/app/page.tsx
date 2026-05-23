@@ -327,26 +327,35 @@ function ChatTab({
     <div>
       <h2 className="text-3xl font-black">Ví Chat</h2>
 
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-      <TransactionList
-  transactions={transactions}
-  walletId={selectedWalletId}
-  currentUid={user.uid}
-/>
+      <div className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm">
+  <div className="border-b border-slate-100 p-5">
+    <h2 className="text-2xl font-black">Ví Chat realtime</h2>
+    <p className="mt-1 text-slate-500">
+      Ghi thu chi như đang nhắn tin. Dữ liệu đồng bộ trực tiếp với app Android.
+    </p>
+  </div>
 
-        {selectedWalletId && (
-          <ChatComposer
-            onSend={async (text) => {
-              await sendTransaction({
-                walletId: selectedWalletId,
-                text,
-                uid: user.uid,
-                displayName: user.displayName || "Người dùng",
-              });
-            }}
-          />
-        )}
-      </div>
+  <div className="max-h-[62vh] min-h-[360px] overflow-y-auto bg-[#F6F8F7] p-4">
+    <TransactionList
+      transactions={transactions}
+      walletId={selectedWalletId}
+      currentUid={user.uid}
+    />
+  </div>
+
+  {selectedWalletId && (
+    <ChatComposer
+      onSend={async (text) => {
+        await sendTransaction({
+          walletId: selectedWalletId,
+          text,
+          uid: user.uid,
+          displayName: user.displayName || "Người dùng",
+        });
+      }}
+    />
+  )}
+</div>
     </div>
   );
 }

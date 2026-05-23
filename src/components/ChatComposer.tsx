@@ -12,8 +12,7 @@ export function ChatComposer({
 
   async function handleSend() {
     const clean = text.trim();
-
-    if (!clean) return;
+    if (!clean || loading) return;
 
     try {
       setLoading(true);
@@ -25,30 +24,24 @@ export function ChatComposer({
   }
 
   return (
-    <div className="sticky bottom-0 mt-4 border-t border-slate-100 bg-white p-3">
-      <div className="flex items-center gap-3">
-        <button className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E4F7F0] text-xl text-[#168768]">
-          +
-        </button>
-
+    <div className="sticky bottom-0 border-t border-slate-100 bg-white/95 p-3 backdrop-blur">
+      <div className="flex items-center gap-2 rounded-full bg-[#F6F8F7] p-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Gõ tự nhiên: ăn sáng 50k..."
-          className="h-11 flex-1 rounded-full bg-[#F6F8F7] px-4 outline-none"
+          placeholder="Gõ: ăn sáng 50k, nhận lương 10tr..."
+          className="h-11 flex-1 bg-transparent px-3 text-[15px] outline-none"
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSend();
-            }
+            if (e.key === "Enter") handleSend();
           }}
         />
 
         <button
           onClick={handleSend}
-          disabled={loading}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-[#168768] text-white"
+          disabled={loading || !text.trim()}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-[#168768] font-bold text-white disabled:opacity-40"
         >
-          {loading ? "..." : "➤"}
+          {loading ? "…" : "➤"}
         </button>
       </div>
     </div>
