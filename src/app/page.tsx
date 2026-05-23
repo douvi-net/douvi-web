@@ -9,6 +9,7 @@ import { ChatBubble } from "@/components/ChatBubble";
 import { ChatComposer } from "@/components/ChatComposer";
 import { sendTransaction } from "@/lib/sendTransaction";
 import { createPersonalWallet } from "@/lib/wallets";
+import { douvi } from "@/lib/douviTheme";
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
@@ -120,7 +121,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#F6F8F7] text-slate-900">
-     <div className="mx-auto flex min-h-screen max-w-7xl pb-20 md:pb-0">
+    <div className="min-h-screen" style={{ backgroundColor: douvi.background }}>
         <aside className="hidden w-72 border-r border-slate-200 bg-white p-6 md:block">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#168768] text-xl font-black text-white">
@@ -151,19 +152,17 @@ export default function HomePage() {
         </aside>
 
         <section className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/80 px-5 py-4 backdrop-blur-xl">
-            <div>
-              <p className="text-sm text-slate-500">Xin chào</p>
-              <h2 className="text-xl font-black">{user.displayName || "Người dùng"}</h2>
-            </div>
-
-            <button
-              onClick={() => signOut(auth)}
-              className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-500 hover:bg-red-50"
-            >
-              Đăng xuất
-            </button>
-          </header>
+        <DouviMobileTopBar
+  title={
+    wallets.find((w) => w.walletId === selectedWalletId)?.name || "Douvi"
+  }
+  subtitle={
+    wallets.find((w) => w.walletId === selectedWalletId)?.type === "couple"
+      ? "Ví chung của tụi mình"
+      : "Ví cá nhân"
+  }
+  user={user}
+/>
 
           <div className="flex-1 p-4 pb-28 md:p-8 md:pb-8">
             {activeTab === "home" && (
@@ -194,7 +193,7 @@ export default function HomePage() {
               <button
                 key={item.key}
                 onClick={() => setActiveTab(item.key)}
-                className={`rounded-2xl px-2 py-2 text-xs font-bold ${
+                className={`rounded-2xl px-2 py-2 text-[11px] font-bold transition ${
                   activeTab === item.key ? "bg-[#E4F7F0] text-[#168768]" : "text-slate-500"
                 }`}
               >
@@ -327,7 +326,7 @@ function ChatTab({
     <div>
       <h2 className="text-3xl font-black">Ví Chat</h2>
 
-      <div className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm">
+      <div className="mt-4 overflow-hidden rounded-[1.5rem] bg-white shadow-sm md:mt-6 md:rounded-[2rem]">
   <div className="border-b border-slate-100 p-5">
     <h2 className="text-2xl font-black">Ví Chat realtime</h2>
     <p className="mt-1 text-slate-500">
@@ -335,7 +334,7 @@ function ChatTab({
     </p>
   </div>
 
-  <div className="max-h-[62vh] min-h-[360px] overflow-y-auto bg-[#F6F8F7] p-4">
+  <div className="max-h-[58vh] min-h-[420px] overflow-y-auto bg-[#F6F8F7] p-3 md:max-h-[62vh] md:p-4">
     <TransactionList
       transactions={transactions}
       walletId={selectedWalletId}
@@ -434,5 +433,69 @@ function Card({ title, value, desc }: { title: string; value: string; desc: stri
       <p className="mt-3 text-3xl font-black text-[#168768]">{value}</p>
       <p className="mt-2 text-sm text-slate-500">{desc}</p>
     </div>
+  );
+}
+function DouviMobileTopBar({
+  title,
+  subtitle,
+  user,
+}: {
+  title: string;
+  subtitle?: string;
+  user: any;
+}) {
+  return (
+    <header
+      className="sticky top-0 z-40 flex h-[58px] items-center gap-3 border-b px-4"
+      style={{
+        backgroundColor: douvi.background,
+        borderColor: douvi.border,
+      }}
+    >
+      <div className="relative flex h-10 w-14 items-center">
+        <div className="absolute left-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#FFF1F3]">
+          💚
+        </div>
+
+        <div
+          className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-sm font-black"
+          style={{
+            backgroundColor: douvi.primarySoft,
+            color: douvi.primary,
+          }}
+        >
+          {user?.displayName?.charAt(0)?.toUpperCase() || "D"}
+        </div>
+
+        <span
+          className="absolute bottom-0 right-1 z-20 h-3 w-3 rounded-full border-2 border-white"
+          style={{ backgroundColor: douvi.primary }}
+        />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <h1
+          className="truncate text-[18px] font-black"
+          style={{ color: douvi.textPrimary }}
+        >
+          {title}
+        </h1>
+
+        <p
+          className="truncate text-xs"
+          style={{ color: douvi.textSecondary }}
+        >
+          {subtitle} · Online
+        </p>
+      </div>
+
+      <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+        🔍
+      </button>
+
+      <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+        🔔
+      </button>
+    </header>
   );
 }
