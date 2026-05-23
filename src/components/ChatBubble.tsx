@@ -1,5 +1,4 @@
 import { DouviTransaction } from "@/lib/transactions";
-import { setTransactionReaction } from "@/lib/reactions";
 
 function formatMoney(amount: number, type: string) {
   const prefix = type === "INCOME" ? "+" : "-";
@@ -41,8 +40,6 @@ function reactionEmoji(reactions?: string | null) {
 export function ChatBubble({
   item,
   isMine,
-  walletId,
-  currentUid,
 }: {
   item: DouviTransaction;
   isMine: boolean;
@@ -52,7 +49,6 @@ export function ChatBubble({
   const isMoney = item.amount > 0;
   const isIncome = item.type === "INCOME";
   const emoji = reactionEmoji(item.reactions);
-  const canReact = Boolean(walletId && item.id && currentUid);
 
   return (
     <div className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
@@ -107,34 +103,6 @@ export function ChatBubble({
             {item.type === "MESSAGE" && (
               <p className="mt-2 text-sm text-slate-500">Tin nhắn</p>
             )}
-
-            <div className="mt-3 flex gap-2">
-              {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
-                <button
-                  key={reaction}
-                  disabled={!canReact}
-                  onClick={() =>
-                    setTransactionReaction({
-                      walletId,
-                      transactionId: item.id,
-                      uid: currentUid,
-                      reaction: reaction as any,
-                    })
-                  }
-                  className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110 disabled:opacity-40"
-                >
-                  {reaction === "LOVE"
-                    ? "❤️"
-                    : reaction === "LIKE"
-                    ? "👍"
-                    : reaction === "HAHA"
-                    ? "😂"
-                    : reaction === "WOW"
-                    ? "😮"
-                    : "😡"}
-                </button>
-              ))}
-            </div>
           </div>
 
           {emoji && (
