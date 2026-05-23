@@ -17,7 +17,9 @@ function parseReactionMap(reactions?: string | null): Record<string, string> {
 
   try {
     const parsed = JSON.parse(reactions);
-    return parsed && typeof parsed === "object" ? parsed : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
   } catch {
     return {};
   }
@@ -28,10 +30,10 @@ function reactionEmoji(reactions?: string | null) {
   const first = Object.values(map)[0];
 
   if (first === "LIKE") return "👍";
+  if (first === "LOVE") return "❤️";
   if (first === "HAHA") return "😂";
   if (first === "WOW") return "😮";
   if (first === "ANGRY") return "😡";
-  if (first === "LOVE") return "❤️";
 
   return "";
 }
@@ -50,6 +52,7 @@ export function ChatBubble({
   const isMoney = item.amount > 0;
   const isIncome = item.type === "INCOME";
   const emoji = reactionEmoji(item.reactions);
+  const canReact = Boolean(walletId && item.id && currentUid);
 
   return (
     <div className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
@@ -65,9 +68,7 @@ export function ChatBubble({
             }`}
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="font-bold text-slate-900">
-                {item.note || "Giao dịch"}
-              </p>
+              <p className="font-bold text-slate-900">{item.note || "Giao dịch"}</p>
 
               <span className="text-xs text-slate-400">
                 {item.createdAt
@@ -111,6 +112,7 @@ export function ChatBubble({
               {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
                 <button
                   key={reaction}
+                  disabled={!canReact}
                   onClick={() =>
                     setTransactionReaction({
                       walletId,
@@ -119,7 +121,7 @@ export function ChatBubble({
                       reaction: reaction as any,
                     })
                   }
-                  className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110"
+                  className="rounded-full bg-white px-2 py-1 text-sm shadow-sm hover:scale-110 disabled:opacity-40"
                 >
                   {reaction === "LOVE"
                     ? "❤️"

@@ -3,13 +3,15 @@ import { db } from "@/lib/firebase";
 
 export type ReactionCode = "LIKE" | "LOVE" | "HAHA" | "WOW" | "ANGRY";
 
-function parseReactions(value: unknown): Record<string, string> {
+function normalizeReactions(value: unknown): Record<string, string> {
   if (!value) return {};
 
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
-      return parsed && typeof parsed === "object" ? parsed : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? (parsed as Record<string, string>)
+        : {};
     } catch {
       return {};
     }
@@ -33,12 +35,17 @@ export async function setTransactionReaction({
   uid: string;
   reaction: ReactionCode;
 }) {
-  if (!walletId || !transactionId || !uid) return;
+  if (!walletId || !transactionId || !uid) {
+    console.warn("Missing reaction params", { walletId, transactionId, uid });
+    return;
+  }
 
   const ref = doc(db, "wallets", walletId, "transactions", transactionId);
   const snap = await getDoc(ref);
 
-  const reactionMap = parseReactions(snap.data()?.reactions);
+  if (!snap.exists()) return;
+
+  const reactionMap = normalizeReactions(snap.data().reactions);
   reactionMap[uid] = reaction;
 
   await updateDoc(ref, {

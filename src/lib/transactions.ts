@@ -19,6 +19,20 @@ export type DouviTransaction = {
   reactions?: string | null;
 };
 
+function normalizeReactionString(value: unknown): string | null {
+  if (!value) return null;
+
+  if (typeof value === "string") {
+    return value.trim() ? value : null;
+  }
+
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+
+  return null;
+}
+
 export function observeWalletTransactions(
   walletId: string,
   callback: (items: DouviTransaction[]) => void
@@ -35,24 +49,19 @@ export function observeWalletTransactions(
       return {
         id: doc.id,
         transactionId: Number(data.transactionId || 0),
-        walletId: data.walletId || walletId,
-        type: data.type || "EXPENSE",
+        walletId: String(data.walletId || walletId),
+        type: data.type === "INCOME" || data.type === "MESSAGE" ? data.type : "EXPENSE",
         amount: Number(data.amount || 0),
-        category: data.category || "",
-        note: data.note || "",
-        paymentMethod: data.paymentMethod || "cash",
+        category: String(data.category || ""),
+        note: String(data.note || ""),
+        paymentMethod: String(data.paymentMethod || "cash"),
         createdAt: Number(data.createdAt || 0),
         updatedAt: Number(data.updatedAt || 0),
-        createdByUid: data.createdByUid || "",
-        createdByName: data.createdByName || "Người dùng",
-        imagePath: data.imagePath || null,
+        createdByUid: String(data.createdByUid || ""),
+        createdByName: String(data.createdByName || "Người dùng"),
+        imagePath: data.imagePath ? String(data.imagePath) : null,
         isPinned: Boolean(data.isPinned || false),
-        reactions:
-          typeof data.reactions === "string"
-            ? data.reactions
-            : data.reactions
-            ? JSON.stringify(data.reactions)
-            : null,
+        reactions: normalizeReactionString(data.reactions),
       };
     });
 
