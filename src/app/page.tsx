@@ -102,9 +102,9 @@ export default function HomePage() {
   };
   if (!user) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F6F8F7] p-6">
-        <div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-xl">
-          <h1 className="text-5xl font-black text-[#168768]">Douvi</h1>
+      <main className="flex min-h-screen items-center justify-center bg-[#F6F8F7] p-5">
+        <div className="w-full max-w-md rounded-[1.6rem] bg-white p-8 text-center shadow-xl">
+        <h1 className="text-[24px] font-black leading-tight" font-black text-[#168768]">Douvi</h1>
           <p className="mt-4 text-slate-500">Ví chat dành cho cá nhân và cặp đôi</p>
 
           <button
@@ -122,7 +122,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#F6F8F7] text-slate-900">
     <div className="min-h-screen" style={{ backgroundColor: douvi.background }}>
-        <aside className="hidden w-72 border-r border-slate-200 bg-white p-6 md:block">
+        <aside className="hidden w-72 border-r border-slate-200 bg-white p-5 md:block">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#168768] text-xl font-black text-white">
               D
@@ -188,7 +188,7 @@ export default function HomePage() {
             {activeTab === "settings" && <SettingsTab user={user} />}
           </div>
 
-          <nav className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-4 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-4 rounded-[28px] border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
             {navItems.map((item) => (
               <button
                 key={item.key}
@@ -250,7 +250,7 @@ function HomeTab({
         <Card title="Tổng chi" value={`${totalExpense.toLocaleString("vi-VN")}đ`} desc={user.email || ""} />
       </div>
 
-      <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
+      <div className="mt-8 rounded-[1.6rem] bg-white p-5 shadow-sm">
         <h3 className="text-2xl font-black">Danh sách ví</h3>
 
         {walletLoading ? (
@@ -294,7 +294,7 @@ function HomeTab({
                 </div>
 
                 {wallet.inviteCode && (
-                  <p className="mt-3 text-sm text-slate-500">
+                  <p className="mt-2 text-sm leading-relaxed text-sm text-slate-500">
                     Mã mời: <b>{wallet.inviteCode}</b>
                   </p>
                 )}
@@ -326,7 +326,7 @@ function ChatTab({
     <div>
       <h2 className="text-3xl font-black">Ví Chat</h2>
 
-      <div className="mt-4 overflow-hidden rounded-[1.5rem] bg-white shadow-sm md:mt-6 md:rounded-[2rem]">
+      <div className="mt-4 overflow-hidden rounded-[1.5rem] bg-white shadow-sm md:mt-6 md:rounded-[1.6rem]">
   <div className="border-b border-slate-100 p-5">
     <h2 className="text-2xl font-black">Ví Chat realtime</h2>
     <p className="mt-1 text-slate-500">
@@ -380,7 +380,7 @@ function SettingsTab({ user }: { user: User }) {
   return (
     <div>
       <h2 className="text-3xl font-black">Cài đặt</h2>
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-[1.6rem] bg-white p-5 shadow-sm">
         {user.photoURL && <img src={user.photoURL} alt="" className="h-20 w-20 rounded-full" />}
         <h3 className="mt-4 text-2xl font-black">{user.displayName}</h3>
 <p className="text-slate-500">{user.email}</p>
@@ -402,7 +402,7 @@ function TransactionList({
   currentUid: string;
 }) {
   return (
-    <div className="mt-8 rounded-[2rem] bg-white p-4 shadow-sm">
+    <div className="mt-8 rounded-[1.6rem] bg-white p-4 shadow-sm">
       <h3 className="px-2 text-2xl font-black">Ví Chat realtime</h3>
 
       {transactions.length === 0 ? (
@@ -428,7 +428,7 @@ function TransactionList({
 
 function Card({ title, value, desc }: { title: string; value: string; desc: string }) {
   return (
-    <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+    <div className="rounded-[1.6rem] bg-white p-5 shadow-sm">
       <p className="text-sm font-bold text-slate-500">{title}</p>
       <p className="mt-3 text-3xl font-black text-[#168768]">{value}</p>
       <p className="mt-2 text-sm text-slate-500">{desc}</p>
@@ -450,6 +450,8 @@ function DouviMobileTopBar({
       style={{
         backgroundColor: douvi.background,
         borderColor: douvi.border,
+        boxShadow: "0 10px 40px rgba(15,23,42,0.12)",
+backdropFilter: "blur(18px)",
       }}
     >
       <div className="relative flex h-10 w-14 items-center">
