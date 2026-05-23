@@ -120,7 +120,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#F6F8F7] text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-7xl">
+     <div className="mx-auto flex min-h-screen max-w-7xl pb-20 md:pb-0">
         <aside className="hidden w-72 border-r border-slate-200 bg-white p-6 md:block">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#168768] text-xl font-black text-white">
@@ -165,7 +165,7 @@ export default function HomePage() {
             </button>
           </header>
 
-          <div className="flex-1 p-5 pb-24 md:p-8">
+          <div className="flex-1 p-4 pb-28 md:p-8 md:pb-8">
             {activeTab === "home" && (
               <HomeTab
                 user={user}
@@ -189,7 +189,7 @@ export default function HomePage() {
             {activeTab === "settings" && <SettingsTab user={user} />}
           </div>
 
-          <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-4 border-t border-slate-200 bg-white p-2 md:hidden">
+          <nav className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-4 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
             {navItems.map((item) => (
               <button
                 key={item.key}
