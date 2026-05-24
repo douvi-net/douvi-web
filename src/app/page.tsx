@@ -456,19 +456,150 @@ function ChatTab({
   );
 }
 
-function SummaryTab({ transactions }: { transactions: DouviTransaction[] }) {
-  const expense = transactions.filter((item) => item.type === "EXPENSE").reduce((sum, item) => sum + item.amount, 0);
-  const income = transactions.filter((item) => item.type === "INCOME").reduce((sum, item) => sum + item.amount, 0);
+function SummaryTab({
+  transactions,
+}: {
+  transactions: DouviTransaction[];
+}) {
+  const income = transactions
+    .filter((item) => item.type === "INCOME")
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  const expense = transactions
+    .filter((item) => item.type === "EXPENSE")
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  const balance = income - expense;
+
+  const expenseItems = transactions.filter((item) => item.type === "EXPENSE");
+
+  const categoryMap = expenseItems.reduce<Record<string, number>>((map, item) => {
+    const key = item.category || "Khác";
+    map[key] = (map[key] || 0) + item.amount;
+    return map;
+  }, {});
+
+  const topCategories = Object.entries(categoryMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const biggestExpense = expenseItems.sort((a, b) => b.amount - a.amount)[0];
 
   return (
-    <div>
-      <h2 className="text-3xl font-black">Tổng quan</h2>
+    <main className="space-y-4 px-4 pb-28 pt-4">
+      <section
+        className="rounded-[28px] p-5 text-white shadow-sm"
+        style={{
+          background: "linear-gradient(135deg,#168768 0%,#0F6F55 100%)",
+        }}
+      >
+        <p className="text-sm font-semibold opacity-80">Tổng quan tháng này</p>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-3">
-        <Card title="Thu nhập" value={`${income.toLocaleString("vi-VN")}đ`} desc="Tổng thu" />
-        <Card title="Chi tiêu" value={`${expense.toLocaleString("vi-VN")}đ`} desc="Tổng chi" />
-        <Card title="Số dư" value={`${(income - expense).toLocaleString("vi-VN")}đ`} desc="Thu - chi" />
+        <h1 className="mt-1 text-3xl font-black">
+          {balance.toLocaleString("vi-VN")}đ
+        </h1>
+
+        <p className="mt-1 text-sm opacity-80">
+          {balance >= 0
+            ? "Bạn đang giữ được dòng tiền dương 💚"
+            : "Tháng này đang chi nhiều hơn thu"}
+        </p>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3">
+        <SummaryMiniCard title="Tổng thu" value={income} color="#21966B" icon="💰" />
+        <SummaryMiniCard title="Tổng chi" value={expense} color="#E05F58" icon="🧾" />
+      </section>
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-black text-[#17231F]">Insight nhanh</h2>
+
+        <div className="mt-3 rounded-[22px] bg-[#F2F8F5] p-4">
+          <p className="font-black text-[#17231F]">
+            {biggestExpense
+              ? `Khoản chi lớn nhất: ${biggestExpense.note || "Giao dịch"}`
+              : "Chưa có dữ liệu chi tiêu"}
+          </p>
+
+          <p className="mt-1 text-sm text-[#62736D]">
+            {biggestExpense
+              ? `${biggestExpense.amount.toLocaleString("vi-VN")}đ • ${
+                  biggestExpense.category || "Khác"
+                }`
+              : "Hãy ghi vài giao dịch để Douvi phân tích cho bạn."}
+          </p>
+        </div>
+      </section>
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-black text-[#17231F]">Danh mục chi nhiều</h2>
+          <span className="text-xs font-bold text-[#8A9993]">
+            Top {topCategories.length}
+          </span>
+        </div>
+
+        {topCategories.length === 0 ? (
+          <div className="mt-4 rounded-[22px] bg-[#F2F8F5] p-4">
+            <p className="font-bold text-[#17231F]">Chưa có thống kê</p>
+            <p className="mt-1 text-sm text-[#62736D]">
+              Ghi chi tiêu ở Ví Chat để xem danh mục nào đang tốn tiền nhất.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {topCategories.map(([category, amount]) => {
+              const percent = expense > 0 ? Math.round((amount / expense) * 100) : 0;
+
+              return (
+                <div key={category}>
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="font-bold text-[#17231F]">{category}</p>
+                    <p className="text-sm font-black text-[#E05F58]">
+                      {amount.toLocaleString("vi-VN")}đ
+                    </p>
+                  </div>
+
+                  <div className="h-3 overflow-hidden rounded-full bg-[#EEF5F1]">
+                    <div
+                      className="h-full rounded-full bg-[#E05F58]"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+
+                  <p className="mt-1 text-xs text-[#8A9993]">{percent}% tổng chi</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function SummaryMiniCard({
+  title,
+  value,
+  color,
+  icon,
+}: {
+  title: string;
+  value: number;
+  color: string;
+  icon: string;
+}) {
+  return (
+    <div className="rounded-[24px] bg-white p-4 shadow-sm">
+      <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-[#F2F8F5] text-xl">
+        {icon}
       </div>
+
+      <p className="mt-3 text-sm font-bold text-[#62736D]">{title}</p>
+
+      <p className="mt-1 text-xl font-black" style={{ color }}>
+        {value.toLocaleString("vi-VN")}đ
+      </p>
     </div>
   );
 }
