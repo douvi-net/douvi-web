@@ -214,15 +214,13 @@ export default function HomePage() {
 )}
 
 {!walletLoading && !appError && activeTab === "home" && (
-  <HomeTab
-    user={user}
-    wallets={wallets}
-    walletLoading={walletLoading}
-    selectedWalletId={selectedWalletId}
-    onSelectWallet={setSelectedWalletId}
-    transactions={transactions}
-    onCreatePersonalWallet={handleCreatePersonalWallet}
-  />
+ <HomeTab
+ user={user}
+ wallets={wallets}
+ selectedWalletId={selectedWalletId}
+ transactions={transactions}
+ onCreatePersonalWallet={handleCreatePersonalWallet}
+/>
 )}
 
 {!walletLoading && !appError && activeTab === "chat" && (
