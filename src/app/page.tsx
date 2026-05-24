@@ -104,7 +104,7 @@ export default function HomePage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F6F8F7] p-5">
         <div className="w-full max-w-md rounded-[1.6rem] bg-white p-8 text-center shadow-xl">
-        <h1 className="text-[24px] font-black leading-tight" font-black text-[#168768]">Douvi</h1>
+        <h1 className="text-[24px] font-black leading-tight text-[#168768]">Douvi</h1>
           <p className="mt-4 text-slate-500">Ví chat dành cho cá nhân và cặp đôi</p>
 
           <button
@@ -178,11 +178,12 @@ export default function HomePage() {
             )}
 
 {activeTab === "chat" && (
-  <ChatTab
-    user={user}
-    selectedWalletId={selectedWalletId}
-    transactions={transactions}
-  />
+ <ChatTab
+ user={user}
+ selectedWalletId={selectedWalletId}
+ wallets={wallets}
+ transactions={transactions}
+/>
 )}
             {activeTab === "summary" && <SummaryTab transactions={transactions} />}
             {activeTab === "settings" && <SettingsTab user={user} />}
@@ -294,7 +295,7 @@ function HomeTab({
                 </div>
 
                 {wallet.inviteCode && (
-                  <p className="mt-2 text-sm leading-relaxed text-sm text-slate-500">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
                     Mã mời: <b>{wallet.inviteCode}</b>
                   </p>
                 )}
