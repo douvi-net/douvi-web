@@ -33,6 +33,7 @@ export default function HomePage() {
 
   const [wallets, setWallets] = useState<DouviWallet[]>([]);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [appError, setAppError] = useState<string | null>(null);
   const [selectedWalletId, setSelectedWalletId] = useState("");
   const [transactions, setTransactions] = useState<DouviTransaction[]>([]);
   const [members, setMembers] = useState<DouviWalletMember[]>([]);
@@ -44,20 +45,24 @@ export default function HomePage() {
         setWallets([]);
         setSelectedWalletId("");
         setTransactions([]);
+        setMembers([]);
+        setAppError(null);
         return;
       }
 
       try {
         setWalletLoading(true);
+        setAppError(null);
         const userWallets = await getUserWallets(firebaseUser.uid);
         setWallets(userWallets);
 
         if (userWallets.length > 0) {
           setSelectedWalletId(userWallets[0].walletId);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
         setWallets([]);
+        setAppError(error?.message || "Không thể tải dữ liệu Douvi");
       } finally {
         setWalletLoading(false);
       }
@@ -183,27 +188,53 @@ export default function HomePage() {
 />
 
           <div className="flex-1 p-4 pb-28 md:p-8 md:pb-8">
-            {activeTab === "home" && (
-              <HomeTab
-                user={user}
-                wallets={wallets}
-                walletLoading={walletLoading}
-                selectedWalletId={selectedWalletId}
-                onSelectWallet={setSelectedWalletId}
-                transactions={transactions}
-                onCreatePersonalWallet={handleCreatePersonalWallet}
-              />
-            )}
+          {walletLoading && <DouviLoadingCard />}
 
-{activeTab === "chat" && (
-  <ChatTab
-  user={user}
-  selectedWalletId={selectedWalletId}
-  wallets={wallets}
-  transactions={transactions}
-/>
+{!walletLoading && appError && (
+  <DouviErrorCard
+    message={appError}
+    onRetry={async () => {
+      try {
+        setAppError(null);
+        setWalletLoading(true);
+
+        const fresh = await getUserWallets(user.uid);
+        setWallets(fresh);
+
+        if (fresh.length > 0) {
+          setSelectedWalletId(fresh[0].walletId);
+        }
+      } catch (error: any) {
+        setAppError(error?.message || "Không thể tải dữ liệu Douvi");
+      } finally {
+        setWalletLoading(false);
+      }
+    }}
+  />
 )}
-        {activeTab === "wallet" && (
+
+{!walletLoading && !appError && activeTab === "home" && (
+  <HomeTab
+    user={user}
+    wallets={wallets}
+    walletLoading={walletLoading}
+    selectedWalletId={selectedWalletId}
+    onSelectWallet={setSelectedWalletId}
+    transactions={transactions}
+    onCreatePersonalWallet={handleCreatePersonalWallet}
+  />
+)}
+
+{!walletLoading && !appError && activeTab === "chat" && (
+  <ChatTab
+    user={user}
+    selectedWalletId={selectedWalletId}
+    wallets={wallets}
+    transactions={transactions}
+  />
+)}
+
+{!walletLoading && !appError && activeTab === "wallet" && (
   <WalletHubTab
     user={user}
     wallets={wallets}
@@ -216,15 +247,17 @@ export default function HomePage() {
   />
 )}
 
-{activeTab === "summary" && <SummaryTab transactions={transactions} />}
+{!walletLoading && !appError && activeTab === "summary" && (
+  <SummaryTab transactions={transactions} />
+)}
 
-{activeTab === "settings" && (
+{!walletLoading && !appError && activeTab === "settings" && (
   <SettingsTab
-  user={user}
-  wallets={wallets}
-  members={members}
-  selectedWalletId={selectedWalletId}
-/>
+    user={user}
+    wallets={wallets}
+    members={members}
+    selectedWalletId={selectedWalletId}
+  />
 )}
           </div>
 
@@ -1128,5 +1161,58 @@ function WalletHubTab({
         </button>
       </section>
     </main>
+  );
+}
+function DouviLoadingCard({ text = "Đang tải dữ liệu Douvi..." }: { text?: string }) {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center px-6">
+      <div className="w-full max-w-sm rounded-[28px] bg-white p-6 text-center shadow-sm">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#E4F7F0] text-3xl">
+          💚
+        </div>
+
+        <div className="mx-auto mt-5 h-2 w-28 overflow-hidden rounded-full bg-[#EEF5F1]">
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-[#168768]" />
+        </div>
+
+        <p className="mt-4 font-black text-[#17231F]">{text}</p>
+        <p className="mt-1 text-sm text-[#62736D]">
+          Douvi đang đồng bộ ví và giao dịch realtime.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DouviErrorCard({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="px-4 pb-28 pt-4">
+      <div className="rounded-[28px] bg-white p-5 text-center shadow-sm">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#FFECEA] text-3xl">
+          ⚠️
+        </div>
+
+        <h2 className="mt-4 text-xl font-black text-[#17231F]">
+          Không tải được dữ liệu
+        </h2>
+
+        <p className="mt-2 text-sm leading-relaxed text-[#62736D]">
+          {message}
+        </p>
+
+        <button
+          onClick={onRetry}
+          className="mt-5 w-full rounded-[20px] bg-[#168768] py-3 font-black text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    </div>
   );
 }
