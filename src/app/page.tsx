@@ -187,7 +187,11 @@ export default function HomePage() {
 />
 )}
             {activeTab === "summary" && <SummaryTab transactions={transactions} />}
-            {activeTab === "settings" && <SettingsTab user={user} />}
+            {activeTab === "settings" && <SettingsTab
+  user={user}
+  wallets={wallets}
+  selectedWalletId={selectedWalletId}
+/>}
           </div>
 
           <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-4 rounded-[28px] border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
