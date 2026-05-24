@@ -3,17 +3,23 @@
 import { onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
-import { DouviWallet, getUserWallets } from "@/lib/wallets";
+import {
+  DouviWallet,
+  getUserWallets,
+  createPersonalWallet,
+  createCoupleWallet,
+  joinWalletByInviteCode,
+} from "@/lib/wallets";
 import { DouviTransaction, observeWalletTransactions } from "@/lib/transactions";
 import { ChatBubble } from "@/components/ChatBubble";
 import { ChatComposer } from "@/components/ChatComposer";
 import { sendTransaction } from "@/lib/sendTransaction";
-import { createPersonalWallet } from "@/lib/wallets";
 import { douvi } from "@/lib/douviTheme";
 
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
+  { key: "wallet", label: "Ví", icon: "👛" },
   { key: "summary", label: "Tổng quan", icon: "📊" },
   { key: "settings", label: "Cài đặt", icon: "⚙️" },
 ];
@@ -179,22 +185,38 @@ export default function HomePage() {
             )}
 
 {activeTab === "chat" && (
- <ChatTab
- user={user}
- selectedWalletId={selectedWalletId}
- wallets={wallets}
- transactions={transactions}
+  <ChatTab
+  user={user}
+  selectedWalletId={selectedWalletId}
+  wallets={wallets}
+  transactions={transactions}
 />
 )}
-            {activeTab === "summary" && <SummaryTab transactions={transactions} />}
-            {activeTab === "settings" && <SettingsTab
-  user={user}
-  wallets={wallets}
-  selectedWalletId={selectedWalletId}
-/>}
+        {activeTab === "wallet" && (
+  <WalletHubTab
+    user={user}
+    wallets={wallets}
+    selectedWalletId={selectedWalletId}
+    onWalletsReload={async () => {
+      const fresh = await getUserWallets(user.uid);
+      setWallets(fresh);
+      if (fresh.length > 0) setSelectedWalletId(fresh[0].walletId);
+    }}
+  />
+)}
+
+{activeTab === "summary" && <SummaryTab transactions={transactions} />}
+
+{activeTab === "settings" && (
+  <SettingsTab
+    user={user}
+    wallets={wallets}
+    selectedWalletId={selectedWalletId}
+  />
+)}
           </div>
 
-          <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-4 rounded-[28px] border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-5 rounded-[28px] border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
             {navItems.map((item) => (
               <button
                 key={item.key}
@@ -456,7 +478,7 @@ function SettingsTab({
   wallets,
   selectedWalletId,
 }: {
-  user: any;
+  user: User;
   wallets: DouviWallet[];
   selectedWalletId: string;
 }) {
@@ -749,5 +771,154 @@ backdropFilter: "blur(18px)",
         🔔
       </button>
     </header>
+  );
+}
+function WalletHubTab({
+  user,
+  wallets,
+  selectedWalletId,
+  onWalletsReload,
+}: {
+  user: any;
+  wallets: DouviWallet[];
+  selectedWalletId: string;
+  onWalletsReload: () => Promise<void>;
+}) {
+  const [walletName, setWalletName] = useState("Ví của tụi mình");
+  const [inviteCode, setInviteCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const currentWallet = wallets.find((w) => w.walletId === selectedWalletId);
+
+  async function handleCreateCoupleWallet() {
+    try {
+      setLoading(true);
+      await createCoupleWallet({
+        uid: user.uid,
+        displayName: user.displayName || "Người dùng",
+        walletName,
+      });
+      await onWalletsReload();
+      alert("Đã tạo ví đôi");
+    } catch (e: any) {
+      alert(e.message || "Tạo ví thất bại");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleJoinWallet() {
+    try {
+      setLoading(true);
+      await joinWalletByInviteCode({
+        uid: user.uid,
+        displayName: user.displayName || "Người dùng",
+        inviteCode,
+      });
+      await onWalletsReload();
+      alert("Đã tham gia ví");
+    } catch (e: any) {
+      alert(e.message || "Tham gia ví thất bại");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="space-y-4 px-4 pb-28 pt-4">
+      <section
+        className="rounded-[28px] p-5 shadow-sm"
+        style={{
+          background: "linear-gradient(135deg, #D8F3E9 0%, #F8FBF9 100%)",
+        }}
+      >
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
+          👛
+        </div>
+
+        <h1 className="mt-4 text-2xl font-black text-[#17231F]">
+          Bạn muốn bắt đầu với ví nào?
+        </h1>
+
+        <p className="mt-2 text-sm leading-relaxed text-[#62736D]">
+          Douvi có thể dùng một mình hoặc dùng chung với người bạn tin tưởng.
+        </p>
+      </section>
+
+      {currentWallet && (
+        <section className="rounded-[28px] bg-white p-4 shadow-sm">
+          <p className="text-sm font-bold text-[#62736D]">Ví hiện tại</p>
+          <h2 className="mt-1 text-xl font-black text-[#17231F]">
+            {currentWallet.name}
+          </h2>
+          <p className="mt-1 text-sm text-[#62736D]">
+            {currentWallet.type === "couple"
+              ? `Ví cặp đôi • Mã mời ${currentWallet.inviteCode || "---"}`
+              : "Ví cá nhân"}
+          </p>
+        </section>
+      )}
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-[#E4F7F0] text-xl">
+            💚
+          </div>
+
+          <div className="flex-1">
+            <h2 className="font-black text-[#17231F]">Tạo ví dùng chung</h2>
+            <p className="mt-1 text-sm text-[#62736D]">
+              Cùng nhau ghi thu chi, minh bạch nhẹ nhàng.
+            </p>
+          </div>
+        </div>
+
+        <input
+          value={walletName}
+          onChange={(e) => setWalletName(e.target.value.slice(0, 40))}
+          className="mt-4 h-12 w-full rounded-[20px] border px-4 outline-none"
+          style={{ borderColor: "#DDEAE4" }}
+          placeholder="Tên ví cặp đôi"
+        />
+
+        <button
+          onClick={handleCreateCoupleWallet}
+          disabled={loading || !walletName.trim()}
+          className="mt-3 w-full rounded-[20px] bg-[#168768] py-3 font-black text-white disabled:opacity-40"
+        >
+          {loading ? "Đang xử lý..." : "Tạo ví chung"}
+        </button>
+      </section>
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-[#FFF4DA] text-xl">
+            🔑
+          </div>
+
+          <div className="flex-1">
+            <h2 className="font-black text-[#17231F]">Đã có mã mời?</h2>
+            <p className="mt-1 text-sm text-[#62736D]">
+              Nhập mã để tham gia ví cặp đôi của người kia.
+            </p>
+          </div>
+        </div>
+
+        <input
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value.toUpperCase().slice(0, 10))}
+          className="mt-4 h-12 w-full rounded-[20px] border px-4 font-black uppercase tracking-widest outline-none"
+          style={{ borderColor: "#DDEAE4" }}
+          placeholder="MÃ MỜI"
+        />
+
+        <button
+          onClick={handleJoinWallet}
+          disabled={loading || !inviteCode.trim()}
+          className="mt-3 w-full rounded-[20px] bg-[#168768] py-3 font-black text-white disabled:opacity-40"
+        >
+          {loading ? "Đang tham gia..." : "Tham gia ví"}
+        </button>
+      </section>
+    </main>
   );
 }
