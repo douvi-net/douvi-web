@@ -10,6 +10,7 @@ import { ChatComposer } from "@/components/ChatComposer";
 import { sendTransaction } from "@/lib/sendTransaction";
 import { createPersonalWallet } from "@/lib/wallets";
 import { douvi } from "@/lib/douviTheme";
+
 const navItems = [
   { key: "home", label: "Trang chủ", icon: "🏠" },
   { key: "chat", label: "Ví Chat", icon: "💬" },
@@ -446,18 +447,193 @@ function SummaryTab({ transactions }: { transactions: DouviTransaction[] }) {
   );
 }
 
-function SettingsTab({ user }: { user: User }) {
+function SettingsTab({
+  user,
+  wallets,
+  selectedWalletId,
+}: {
+  user: any;
+  wallets: DouviWallet[];
+  selectedWalletId: string;
+}) {
+  const wallet = wallets.find((w) => w.walletId === selectedWalletId);
+
   return (
-    <div>
-      <h2 className="text-3xl font-black">Cài đặt</h2>
-      <div className="mt-6 rounded-[1.6rem] bg-white p-5 shadow-sm">
-        {user.photoURL && <img src={user.photoURL} alt="" className="h-20 w-20 rounded-full" />}
-        <h3 className="mt-4 text-2xl font-black">{user.displayName}</h3>
-<p className="text-slate-500">{user.email}</p>
-<p className="mt-2 break-all text-sm text-slate-400">
-  UID: {user.uid}
-</p>
+    <main className="space-y-4 px-4 pb-28 pt-4">
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#E4F7F0] text-2xl font-black text-[#168768]">
+            {user?.displayName?.charAt(0)?.toUpperCase() || "D"}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-xl font-black text-[#17231F]">
+              {user?.displayName || "Người dùng"}
+            </h2>
+            <p className="truncate text-sm text-[#62736D]">
+              {user?.email || "Chưa có email"}
+            </p>
+
+            <div className="mt-2 inline-flex rounded-full bg-[#EEF5F1] px-3 py-1 text-xs font-bold text-[#168768]">
+              Đang hoạt động
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SettingsSection title="Ví chung">
+        <SettingsRow
+          icon="👛"
+          title="Thông tin ví"
+          subtitle={wallet?.name || "Chưa có ví"}
+          value={wallet?.type === "couple" ? "Ví đôi" : "Cá nhân"}
+        />
+
+        <SettingsRow
+          icon="👥"
+          title="Thành viên"
+          subtitle={
+            wallet?.type === "couple"
+              ? `${wallet.memberIds.length} thành viên`
+              : "1 thành viên"
+          }
+          value="Xem"
+        />
+
+        <SettingsRow
+          icon="🔑"
+          title="Mã mời"
+          subtitle={wallet?.inviteCode || "Không có"}
+          value={wallet?.inviteCode ? "Copy" : ""}
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Tài khoản của bạn">
+        <SettingsRow
+          icon="👤"
+          title="Thông tin cá nhân"
+          subtitle="Quản lý hồ sơ và tài khoản"
+          value=">"
+        />
+
+        <SettingsRow
+          icon="🔒"
+          title="Bảo mật"
+          subtitle="Đăng nhập, dữ liệu và quyền riêng tư"
+          value=">"
+        />
+
+        <SettingsRow
+          icon="🔔"
+          title="Thông báo"
+          subtitle="Quản lý nhắc nhở và thông báo"
+          value="Tắt"
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Tùy chỉnh ứng dụng">
+        <SettingsRow
+          icon="🎨"
+          title="Giao diện"
+          subtitle="Tùy chỉnh màu sắc và chế độ hiển thị"
+          value="Sáng"
+        />
+
+        <SettingsRow
+          icon="💵"
+          title="Đơn vị tiền tệ"
+          subtitle="VND - Việt Nam Đồng"
+          value="VND"
+        />
+
+        <SettingsRow
+          icon="🌐"
+          title="Ngôn ngữ"
+          subtitle="Tiếng Việt"
+          value="VI"
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Hỗ trợ">
+        <SettingsRow
+          icon="💚"
+          title="Douvi Hạnh Phúc"
+          subtitle="Mở khóa báo cáo nâng cao và tính năng ví đôi"
+          value="Pro"
+        />
+
+        <SettingsRow
+          icon="❓"
+          title="Trung tâm trợ giúp"
+          subtitle="Câu hỏi thường gặp và hỗ trợ"
+          value=">"
+        />
+
+        <SettingsRow
+          icon="ℹ️"
+          title="Giới thiệu Douvi"
+          subtitle="Douvi Web App"
+          value="1.0"
+        />
+      </SettingsSection>
+
+      <button
+        onClick={() => auth.signOut()}
+        className="w-full rounded-[22px] border border-red-200 bg-white py-4 font-black text-red-500 shadow-sm"
+      >
+        Đăng xuất
+      </button>
+    </main>
+  );
+}
+
+function SettingsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="mb-2 px-1 text-sm font-black text-[#62736D]">
+        {title}
+      </h3>
+
+      <div className="overflow-hidden rounded-[26px] bg-white shadow-sm">
+        {children}
       </div>
+    </section>
+  );
+}
+
+function SettingsRow({
+  icon,
+  title,
+  subtitle,
+  value,
+}: {
+  icon: string;
+  title: string;
+  subtitle: string;
+  value?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#E4F7F0] text-xl">
+        {icon}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-black text-[#17231F]">{title}</p>
+        <p className="mt-0.5 truncate text-sm text-[#62736D]">{subtitle}</p>
+      </div>
+
+      {value && (
+        <span className="shrink-0 text-sm font-black text-[#8A9993]">
+          {value}
+        </span>
+      )}
     </div>
   );
 }
