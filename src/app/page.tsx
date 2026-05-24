@@ -316,46 +316,115 @@ function HomeTab({
 function ChatTab({
   user,
   selectedWalletId,
+  wallets,
   transactions,
 }: {
-  user: User;
+  user: any;
   selectedWalletId: string;
+  wallets: DouviWallet[];
   transactions: DouviTransaction[];
 }) {
+  const wallet = wallets.find((w) => w.walletId === selectedWalletId);
+
   return (
-    <div>
-      <h2 className="text-3xl font-black">Ví Chat</h2>
+    <main className="flex h-[calc(100vh-130px)] flex-col">
+      <div
+        className="flex items-center gap-3 border-b px-4 py-3"
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderColor: "#E5ECE8",
+        }}
+      >
+        <div className="relative">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF6F2] text-lg font-black text-[#168768]">
+            {wallet?.name?.charAt(0)?.toUpperCase() || "D"}
+          </div>
 
-      <div className="mt-4 overflow-hidden rounded-[1.5rem] bg-white shadow-sm md:mt-6 md:rounded-[1.6rem]">
-  <div className="border-b border-slate-100 p-5">
-    <h2 className="text-2xl font-black">Ví Chat realtime</h2>
-    <p className="mt-1 text-slate-500">
-      Ghi thu chi như đang nhắn tin. Dữ liệu đồng bộ trực tiếp với app Android.
-    </p>
-  </div>
+          <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#22C55E]" />
+        </div>
 
-  <div className="max-h-[58vh] min-h-[420px] overflow-y-auto bg-[#F6F8F7] p-3 md:max-h-[62vh] md:p-4">
-    <TransactionList
-      transactions={transactions}
-      walletId={selectedWalletId}
-      currentUid={user.uid}
-    />
-  </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-[17px] font-black text-[#17231F]">
+            {wallet?.name || "Ví Douvi"}
+          </h2>
 
-  {selectedWalletId && (
-    <ChatComposer
-      onSend={async (text) => {
-        await sendTransaction({
-          walletId: selectedWalletId,
-          text,
-          uid: user.uid,
-          displayName: user.displayName || "Người dùng",
-        });
-      }}
-    />
-  )}
-</div>
-    </div>
+          <p className="truncate text-xs text-[#62736D]">
+            {wallet?.type === "couple"
+              ? "Ví cặp đôi đang hoạt động"
+              : "Ví cá nhân"}{" "}
+            · Online
+          </p>
+        </div>
+
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2F8F5] text-lg">
+          📞
+        </button>
+
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2F8F5] text-lg">
+          ⋮
+        </button>
+      </div>
+
+      <div
+        className="flex-1 overflow-y-auto px-3 py-4"
+        style={{
+          backgroundColor: "#F8FBF9",
+        }}
+      >
+        {transactions.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#EAF6F2] text-4xl">
+              💬
+            </div>
+
+            <h3 className="mt-5 text-xl font-black text-[#17231F]">
+              Chưa có giao dịch
+            </h3>
+
+            <p className="mt-2 text-sm leading-relaxed text-[#62736D]">
+              Hãy thử nhắn như đang chat:
+              <br />
+              “ăn sáng 50k”
+              <br />
+              “đổ xăng 100k”
+              <br />
+              “lương tháng 10tr”
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {transactions.map((item) => (
+              <ChatBubble
+                key={item.id}
+                item={item}
+                walletId={selectedWalletId}
+                currentUid={user.uid}
+                isMine={item.createdByUid === user.uid}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div
+        className="border-t"
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderColor: "#E5ECE8",
+        }}
+      >
+        <ChatComposer
+          onSend={async (text) => {
+            await sendTransaction({
+              walletId: selectedWalletId,
+              text,
+              uid: user.uid,
+              displayName: user.displayName || "Người dùng",
+            });
+          }}
+        />
+      </div>
+    </main>
   );
 }
 
