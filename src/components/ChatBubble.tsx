@@ -1,9 +1,9 @@
 import { DouviTransaction } from "@/lib/transactions";
-import { douvi } from "@/lib/douviTheme";
+import { setTransactionReaction } from "@/lib/reactions";
 
 function formatMoney(amount: number, type: string) {
   const prefix = type === "INCOME" ? "+" : "-";
-  return `${prefix}${amount.toLocaleString("vi-VN")} đ`;
+  return `${prefix}${amount.toLocaleString("vi-VN")}đ`;
 }
 
 function paymentLabel(method: string) {
@@ -12,21 +12,38 @@ function paymentLabel(method: string) {
   return "💵 Tiền mặt";
 }
 
-function categoryIcon(category: string, type: string) {
-  const text = category.toLowerCase();
+function parseReactionMap(reactions?: string | null): Record<string, string> {
+  if (!reactions) return {};
 
-  if (type === "INCOME") return "💰";
-  if (text.includes("ăn") || text.includes("uống")) return "🍜";
-  if (text.includes("xăng") || text.includes("xe") || text.includes("grab")) return "🚗";
-  if (text.includes("chợ") || text.includes("mua")) return "🛍️";
-  if (text.includes("điện") || text.includes("nước") || text.includes("hóa")) return "🧾";
+  try {
+    const parsed = JSON.parse(reactions);
 
-  return "💚";
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function reactionEmoji(reactions?: string | null) {
+  const map = parseReactionMap(reactions);
+  const first = Object.values(map)[0];
+
+  if (first === "LIKE") return "👍";
+  if (first === "LOVE") return "❤️";
+  if (first === "HAHA") return "😂";
+  if (first === "WOW") return "😮";
+  if (first === "ANGRY") return "😡";
+
+  return "";
 }
 
 export function ChatBubble({
   item,
   isMine,
+  walletId,
+  currentUid,
 }: {
   item: DouviTransaction;
   isMine: boolean;
@@ -36,31 +53,40 @@ export function ChatBubble({
   const isMoney = item.amount > 0;
   const isIncome = item.type === "INCOME";
 
+  const emoji = reactionEmoji(item.reactions);
+
   return (
-    <div className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
-      <div className={`flex max-w-[86%] gap-2 ${isMine ? "flex-row-reverse" : ""}`}>
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black text-white"
-          style={{ backgroundColor: isMine ? douvi.primary : "#FF9AAD" }}
-        >
+    <div
+      className={`flex items-end gap-2 ${
+        isMine ? "justify-end" : "justify-start"
+      }`}
+    >
+      {!isMine && (
+        <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#168768] text-sm font-black text-white shadow-sm">
           {item.createdByName?.charAt(0)?.toUpperCase() || "D"}
         </div>
+      )}
 
+      <div className="relative max-w-[82%]">
         <div
-          className={`rounded-[24px] px-3.5 py-3 shadow-sm ${
-            isMine ? "rounded-br-lg" : "rounded-bl-lg"
+          className={`rounded-[28px] px-4 py-3 shadow-sm transition-all ${
+            isMine
+              ? "rounded-br-[10px]"
+              : "rounded-bl-[10px]"
           }`}
           style={{
-            backgroundColor: isMine ? douvi.chatMine : douvi.chatPartner,
-            color: douvi.textPrimary,
+            background: isMine
+              ? "linear-gradient(135deg,#D8F3E9 0%,#EAF6F2 100%)"
+              : "#FFFFFF",
+            boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
           }}
         >
-          <div className="flex items-start gap-2">
-            <p className="flex-1 text-[15px] font-semibold leading-snug">
+          <div className="flex items-start justify-between gap-3">
+            <p className="break-words text-[15px] font-black leading-relaxed text-[#17231F]">
               {item.note || "Giao dịch"}
             </p>
 
-            <span className="shrink-0 text-[11px]" style={{ color: douvi.textTertiary }}>
+            <span className="shrink-0 pt-1 text-[11px] text-[#8A9993]">
               {item.createdAt
                 ? new Date(item.createdAt).toLocaleTimeString("vi-VN", {
                     hour: "2-digit",
@@ -70,39 +96,85 @@ export function ChatBubble({
             </span>
           </div>
 
+          {item.imagePath && (
+            <img
+              src={item.imagePath}
+              alt="receipt"
+              className="mt-3 max-h-72 w-full rounded-[22px] object-cover"
+            />
+          )}
+
           {isMoney && (
-            <div className="mt-2.5 flex items-center gap-2 rounded-2xl bg-white/70 p-2.5">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-[13px] text-lg"
+            <div
+              className="mt-3 rounded-[22px] p-3"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.7)",
+              }}
+            >
+              <p className="text-xs font-semibold text-[#62736D]">
+                {item.category || "Khác"} •{" "}
+                {paymentLabel(item.paymentMethod)}
+              </p>
+
+              <p
+                className="mt-1 text-[28px] font-black tracking-tight"
                 style={{
-                  backgroundColor: isIncome ? douvi.incomeContainer : douvi.expenseContainer,
+                  color: isIncome ? "#21966B" : "#E05F58",
                 }}
               >
-                {categoryIcon(item.category, item.type)}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs" style={{ color: douvi.textSecondary }}>
-                  {item.category || "Khác"} • {paymentLabel(item.paymentMethod)}
-                </p>
-
-                <p
-                  className="text-base font-black"
-                  style={{ color: isIncome ? douvi.income : douvi.expense }}
-                >
-                  {formatMoney(item.amount, item.type)}
-                </p>
-              </div>
+                {formatMoney(item.amount, item.type)}
+              </p>
             </div>
           )}
 
           {item.type === "MESSAGE" && (
-            <p className="mt-1 text-xs" style={{ color: douvi.textSecondary }}>
-              Tin nhắn
-            </p>
+            <p className="mt-2 text-xs text-[#8A9993]">Tin nhắn</p>
           )}
+
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
+              <button
+                key={reaction}
+                onClick={() =>
+                  setTransactionReaction({
+                    walletId,
+                    transactionId: item.id,
+                    uid: currentUid,
+                    reaction: reaction as any,
+                  })
+                }
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm shadow-sm transition-all hover:scale-110"
+              >
+                {reaction === "LOVE"
+                  ? "❤️"
+                  : reaction === "LIKE"
+                  ? "👍"
+                  : reaction === "HAHA"
+                  ? "😂"
+                  : reaction === "WOW"
+                  ? "😮"
+                  : "😡"}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {emoji && (
+          <div
+            className={`absolute -bottom-3 flex items-center justify-center rounded-full border border-white bg-white px-2 py-1 text-xs shadow-md ${
+              isMine ? "left-4" : "right-4"
+            }`}
+          >
+            {emoji}
+          </div>
+        )}
       </div>
+
+      {isMine && (
+        <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#D8F3E9] text-sm font-black text-[#168768] shadow-sm">
+          {item.createdByName?.charAt(0)?.toUpperCase() || "T"}
+        </div>
+      )}
     </div>
   );
 }
