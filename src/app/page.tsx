@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
 import {
   DouviWallet,
+  DouviWalletMember,
   getUserWallets,
+  getWalletMembers,
   createPersonalWallet,
   createCoupleWallet,
   joinWalletByInviteCode,
@@ -33,7 +35,7 @@ export default function HomePage() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [selectedWalletId, setSelectedWalletId] = useState("");
   const [transactions, setTransactions] = useState<DouviTransaction[]>([]);
-
+  const [members, setMembers] = useState<DouviWalletMember[]>([]);
   useEffect(() => {
     return onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
@@ -74,7 +76,16 @@ export default function HomePage() {
 
     return () => unsubscribe();
   }, [selectedWalletId]);
-
+  useEffect(() => {
+    if (!selectedWalletId) {
+      setMembers([]);
+      return;
+    }
+  
+    getWalletMembers(selectedWalletId)
+      .then(setMembers)
+      .catch(() => setMembers([]));
+  }, [selectedWalletId]);
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -209,10 +220,11 @@ export default function HomePage() {
 
 {activeTab === "settings" && (
   <SettingsTab
-    user={user}
-    wallets={wallets}
-    selectedWalletId={selectedWalletId}
-  />
+  user={user}
+  wallets={wallets}
+  members={members}
+  selectedWalletId={selectedWalletId}
+/>
 )}
           </div>
 
@@ -607,14 +619,21 @@ function SummaryMiniCard({
 function SettingsTab({
   user,
   wallets,
+  members,
   selectedWalletId,
 }: {
-  user: User;
+  user: any;
   wallets: DouviWallet[];
+  members: DouviWalletMember[];
   selectedWalletId: string;
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
-
+  async function copyInviteCode() {
+    if (!wallet?.inviteCode) return;
+  
+    await navigator.clipboard.writeText(wallet.inviteCode);
+    alert("Đã copy mã mời");
+  }
   return (
     <main className="space-y-4 px-4 pb-28 pt-4">
       <section className="rounded-[28px] bg-white p-4 shadow-sm">
@@ -639,31 +658,52 @@ function SettingsTab({
       </section>
 
       <SettingsSection title="Ví chung">
-        <SettingsRow
-          icon="👛"
-          title="Thông tin ví"
-          subtitle={wallet?.name || "Chưa có ví"}
-          value={wallet?.type === "couple" ? "Ví đôi" : "Cá nhân"}
-        />
+  <SettingsRow
+    icon="👛"
+    title="Thông tin ví"
+    subtitle={wallet?.name || "Chưa có ví"}
+    value={wallet?.type === "couple" ? "Ví đôi" : "Cá nhân"}
+  />
 
-        <SettingsRow
-          icon="👥"
-          title="Thành viên"
-          subtitle={
-            wallet?.type === "couple"
-              ? `${wallet.memberIds.length} thành viên`
-              : "1 thành viên"
-          }
-          value="Xem"
-        />
+  <SettingsRow
+    icon="👥"
+    title="Thành viên"
+    subtitle={`${members.length || wallet?.memberIds.length || 1} thành viên`}
+    value="Xem"
+  />
 
-        <SettingsRow
-          icon="🔑"
-          title="Mã mời"
-          subtitle={wallet?.inviteCode || "Không có"}
-          value={wallet?.inviteCode ? "Copy" : ""}
-        />
-      </SettingsSection>
+  {members.map((member) => (
+    <SettingsRow
+      key={member.userId}
+      icon={member.role === "owner" ? "👑" : "💚"}
+      title={member.displayName}
+      subtitle={member.role === "owner" ? "Chủ ví" : "Thành viên"}
+      value={member.userId === user.uid ? "Bạn" : ""}
+    />
+  ))}
+
+  <div
+    onClick={copyInviteCode}
+    className="flex cursor-pointer items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0"
+  >
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#FFF4DA] text-xl">
+      🔑
+    </div>
+
+    <div className="min-w-0 flex-1">
+      <p className="truncate font-black text-[#17231F]">Mã mời ví đôi</p>
+      <p className="mt-0.5 truncate text-sm text-[#62736D]">
+        {wallet?.inviteCode || "Ví này không có mã mời"}
+      </p>
+    </div>
+
+    {wallet?.inviteCode && (
+      <span className="shrink-0 text-sm font-black text-[#168768]">
+        Copy
+      </span>
+    )}
+  </div>
+</SettingsSection>
 
       <SettingsSection title="Tài khoản của bạn">
         <SettingsRow

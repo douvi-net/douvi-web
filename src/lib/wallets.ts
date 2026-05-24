@@ -182,3 +182,30 @@ export async function joinWalletByInviteCode({
 
   return walletId;
 }
+export type DouviWalletMember = {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  role: "owner" | "member";
+  joinedAt: number;
+};
+
+export async function getWalletMembers(walletId: string): Promise<DouviWalletMember[]> {
+  if (!walletId) return [];
+
+  const snapshot = await getDocs(collection(db, "wallets", walletId, "members"));
+
+  return snapshot.docs
+    .map((docSnap) => {
+      const data = docSnap.data();
+
+      return {
+        userId: data.userId || docSnap.id,
+        displayName: data.displayName || "Người dùng",
+        avatarUrl: data.avatarUrl || "",
+        role: data.role || "member",
+        joinedAt: Number(data.joinedAt || 0),
+      };
+    })
+    .sort((a, b) => a.joinedAt - b.joinedAt);
+}
