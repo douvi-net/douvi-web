@@ -284,104 +284,270 @@ export default function HomePage() {
 function HomeTab({
   user,
   wallets,
-  walletLoading,
   selectedWalletId,
-  onSelectWallet,
   transactions,
   onCreatePersonalWallet,
 }: {
-  user: User;
+  user: any;
   wallets: DouviWallet[];
-  walletLoading: boolean;
   selectedWalletId: string;
-  onSelectWallet: (walletId: string) => void;
-  onCreatePersonalWallet: () => Promise<void>;
   transactions: DouviTransaction[];
+  onCreatePersonalWallet: () => Promise<void>;
 }) {
-  const activeWallet = wallets.find((wallet) => wallet.walletId === selectedWalletId) || wallets[0];
+  const selectedWallet = wallets.find(
+    (w) => w.walletId === selectedWalletId
+  );
 
-  const totalExpense = transactions
-    .filter((item) => item.type === "EXPENSE")
-    .reduce((sum, item) => sum + item.amount, 0);
+  const income = transactions
+    .filter((t) => t.type === "INCOME")
+    .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalIncome = transactions
-    .filter((item) => item.type === "INCOME")
-    .reduce((sum, item) => sum + item.amount, 0);
+  const expense = transactions
+    .filter((t) => t.type === "EXPENSE")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = income - expense;
+
+  const recentTransactions = transactions.slice(0, 5);
+
+  const todayExpense = transactions
+    .filter((t) => {
+      const date = new Date(t.createdAt);
+      const today = new Date();
+
+      return (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear() &&
+        t.type === "EXPENSE"
+      );
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div>
-      <h2 className="text-3xl font-black">Trang chủ Douvi</h2>
-      <p className="mt-2 text-slate-500">Dữ liệu ví và giao dịch đang đọc trực tiếp từ Firestore.</p>
-
-      <div className="mt-6 grid gap-5 md:grid-cols-3">
-        <Card
-          title="Ví hiện tại"
-          value={walletLoading ? "Đang tải..." : activeWallet?.name || "Chưa có ví"}
-          desc={activeWallet?.type === "couple" ? "Ví cặp đôi" : "Ví cá nhân"}
-        />
-        <Card title="Tổng thu" value={`${totalIncome.toLocaleString("vi-VN")}đ`} desc="Realtime từ ví đã chọn" />
-        <Card title="Tổng chi" value={`${totalExpense.toLocaleString("vi-VN")}đ`} desc={user.email || ""} />
-      </div>
-
-      <div className="mt-8 rounded-[1.6rem] bg-white p-5 shadow-sm">
-        <h3 className="text-2xl font-black">Danh sách ví</h3>
-
-        {walletLoading ? (
-          <p className="mt-4 text-slate-500">Đang tải ví...</p>
-        ) : wallets.length === 0 ? (
-          <div className="mt-4 rounded-2xl bg-[#F6F8F7] p-5">
-            <p className="text-slate-500">
-              Tài khoản này chưa có ví. Tạo ví cá nhân để bắt đầu dùng Douvi Web.
+    <main className="space-y-4 px-4 pb-28 pt-4">
+      <section
+        className="overflow-hidden rounded-[32px] p-5 text-white shadow-sm"
+        style={{
+          background:
+            "linear-gradient(135deg,#168768 0%,#0F6F55 100%)",
+        }}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold opacity-80">
+              Ví hiện tại
             </p>
-        
+
+            <h1 className="mt-1 text-[28px] font-black leading-tight">
+              {selectedWallet?.name || "Douvi"}
+            </h1>
+
+            <p className="mt-1 text-sm opacity-80">
+              {selectedWallet?.type === "couple"
+                ? "Ví cặp đôi realtime"
+                : "Ví cá nhân"}
+            </p>
+          </div>
+
+          <div className="rounded-full bg-white/15 px-3 py-1 text-xs font-black backdrop-blur">
+            💚 Online
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-[26px] bg-white/15 p-4 backdrop-blur">
+          <p className="text-sm opacity-80">
+            Số dư hiện tại
+          </p>
+
+          <p className="mt-1 text-[34px] font-black tracking-tight">
+            {balance.toLocaleString("vi-VN")}đ
+          </p>
+
+          <div className="mt-4 flex items-center gap-3">
+            <div className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
+              💰 Thu {income.toLocaleString("vi-VN")}đ
+            </div>
+
+            <div className="rounded-full bg-black/15 px-3 py-1 text-xs font-bold">
+              🧾 Chi {expense.toLocaleString("vi-VN")}đ
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-4 gap-3">
+        <QuickAction icon="💬" label="Ví Chat" />
+        <QuickAction icon="👛" label="Ví" />
+        <QuickAction icon="📊" label="Thống kê" />
+        <QuickAction icon="⚙️" label="Cài đặt" />
+      </section>
+
+      <section className="grid grid-cols-2 gap-3">
+        <MiniInsightCard
+          icon="🔥"
+          title="Chi hôm nay"
+          value={`${todayExpense.toLocaleString("vi-VN")}đ`}
+          color="#FFF4DA"
+        />
+
+        <MiniInsightCard
+          icon="📈"
+          title="Giao dịch"
+          value={`${transactions.length} khoản`}
+          color="#EAF6F2"
+        />
+      </section>
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-black text-[#17231F]">
+            Insight nhanh
+          </h2>
+
+          <span className="text-xs font-black text-[#168768]">
+            Douvi AI
+          </span>
+        </div>
+
+        <div className="mt-4 rounded-[24px] bg-[#F2F8F5] p-4">
+          <p className="font-black text-[#17231F]">
+            {expense > income
+              ? "Bạn đang chi nhiều hơn thu 😥"
+              : "Tài chính tháng này đang ổn 💚"}
+          </p>
+
+          <p className="mt-1 text-sm leading-relaxed text-[#62736D]">
+            {expense > income
+              ? "Thử kiểm soát lại các khoản chi nhỏ hằng ngày."
+              : "Tiếp tục duy trì thói quen ghi chép như hiện tại."}
+          </p>
+        </div>
+      </section>
+
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-black text-[#17231F]">
+            Giao dịch gần đây
+          </h2>
+
+          <span className="text-xs font-bold text-[#8A9993]">
+            {recentTransactions.length} tin
+          </span>
+        </div>
+
+        {recentTransactions.length === 0 ? (
+          <div className="mt-4 rounded-[24px] bg-[#F2F8F5] p-4">
+            <p className="font-black text-[#17231F]">
+              Chưa có giao dịch
+            </p>
+
+            <p className="mt-1 text-sm text-[#62736D]">
+              Hãy thử nhắn:
+              <br />
+              “ăn sáng 50k”
+            </p>
+
             <button
               onClick={onCreatePersonalWallet}
-              className="mt-4 rounded-2xl bg-[#168768] px-5 py-3 font-bold text-white hover:bg-[#0F6F55]"
+              className="mt-4 rounded-[18px] bg-[#168768] px-4 py-3 font-black text-white"
             >
               Tạo ví cá nhân
             </button>
           </div>
-        ): (
-          <div className="mt-5 space-y-3">
-            {wallets.map((wallet) => (
+        ) : (
+          <div className="mt-3 space-y-3">
+            {recentTransactions.map((item) => (
               <div
-                key={wallet.walletId}
-                onClick={() => onSelectWallet(wallet.walletId)}
-                className={`cursor-pointer rounded-2xl border p-4 ${
-                  selectedWalletId === wallet.walletId
-                    ? "border-[#168768] bg-[#E4F7F0]"
-                    : "border-slate-100 bg-[#F6F8F7]"
-                }`}
+                key={item.id}
+                className="flex items-center gap-3 rounded-[22px] bg-[#F8FBF9] p-3"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-lg font-black">{wallet.name}</p>
-                    <p className="text-sm text-slate-500">
-                      {wallet.type === "couple" ? "Ví cặp đôi" : "Ví cá nhân"} • {wallet.memberIds.length} thành viên
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-[#168768]">
-                    {selectedWalletId === wallet.walletId ? "Đang chọn" : "Chọn"}
-                  </span>
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-[18px] text-xl"
+                  style={{
+                    backgroundColor:
+                      item.type === "INCOME"
+                        ? "#E3F7EC"
+                        : "#FFECEA",
+                  }}
+                >
+                  {item.type === "INCOME" ? "💰" : "🧾"}
                 </div>
 
-                {wallet.inviteCode && (
-                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                    Mã mời: <b>{wallet.inviteCode}</b>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-black text-[#17231F]">
+                    {item.note}
                   </p>
-                )}
+
+                  <p className="mt-0.5 text-xs text-[#62736D]">
+                    {item.category || "Khác"}
+                  </p>
+                </div>
+
+                <p
+                  className="text-sm font-black"
+                  style={{
+                    color:
+                      item.type === "INCOME"
+                        ? "#21966B"
+                        : "#E05F58",
+                  }}
+                >
+                  {item.type === "INCOME" ? "+" : "-"}
+                  {item.amount.toLocaleString("vi-VN")}đ
+                </p>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
+    </main>
+  );
+}
 
-      <TransactionList
-  transactions={transactions}
-  walletId={selectedWalletId}
-  currentUid={user.uid}
-/>
+function QuickAction({
+  icon,
+  label,
+}: {
+  icon: string;
+  label: string;
+}) {
+  return (
+    <button className="rounded-[24px] bg-white p-4 shadow-sm transition-all active:scale-95">
+      <div className="text-2xl">{icon}</div>
+
+      <p className="mt-2 text-xs font-black text-[#17231F]">
+        {label}
+      </p>
+    </button>
+  );
+}
+
+function MiniInsightCard({
+  icon,
+  title,
+  value,
+  color,
+}: {
+  icon: string;
+  title: string;
+  value: string;
+  color: string;
+}) {
+  return (
+    <div
+      className="rounded-[26px] p-4 shadow-sm"
+      style={{ backgroundColor: color }}
+    >
+      <div className="text-2xl">{icon}</div>
+
+      <p className="mt-3 text-sm font-bold text-[#62736D]">
+        {title}
+      </p>
+
+      <p className="mt-1 text-lg font-black text-[#17231F]">
+        {value}
+      </p>
     </div>
   );
 }
