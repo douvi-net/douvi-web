@@ -843,7 +843,44 @@ function WalletHubTab({
           Douvi có thể dùng một mình hoặc dùng chung với người bạn tin tưởng.
         </p>
       </section>
+      <section className="rounded-[28px] bg-white p-4 shadow-sm">
+  <div className="flex items-start gap-3">
+    <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-[#E4F7F0] text-xl">
+      👤
+    </div>
 
+    <div className="flex-1">
+      <h2 className="font-black text-[#17231F]">Ví cá nhân</h2>
+      <p className="mt-1 text-sm text-[#62736D]">
+        Dùng một mình để ghi thu chi riêng, không cần mã mời.
+      </p>
+    </div>
+  </div>
+
+  <button
+    onClick={async () => {
+      try {
+        setLoading(true);
+
+        await createPersonalWallet({
+          uid: user.uid,
+          displayName: user.displayName || "Người dùng",
+        });
+
+        await onWalletsReload();
+        alert("Đã tạo ví cá nhân");
+      } catch (e: any) {
+        alert(e.message || "Tạo ví cá nhân thất bại");
+      } finally {
+        setLoading(false);
+      }
+    }}
+    disabled={loading}
+    className="mt-4 w-full rounded-[20px] bg-[#168768] py-3 font-black text-white disabled:opacity-40"
+  >
+    {loading ? "Đang tạo ví..." : "Tạo ví cá nhân"}
+  </button>
+</section>
       {currentWallet && (
         <section className="rounded-[28px] bg-white p-4 shadow-sm">
           <p className="text-sm font-bold text-[#62736D]">Ví hiện tại</p>
