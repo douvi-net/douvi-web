@@ -1,5 +1,5 @@
 import { DouviTransaction } from "@/lib/transactions";
-import { setTransactionReaction } from "@/lib/reactions";
+
 
 function formatMoney(amount: number, type: string) {
   const prefix = type === "INCOME" ? "+" : "-";
@@ -12,48 +12,19 @@ function paymentLabel(method: string) {
   return "💵 Tiền mặt";
 }
 
-function parseReactionMap(reactions?: string | null): Record<string, string> {
-  if (!reactions) return {};
 
-  try {
-    const parsed = JSON.parse(reactions);
-
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? parsed
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-function reactionEmoji(reactions?: string | null) {
-  const map = parseReactionMap(reactions);
-  const first = Object.values(map)[0];
-
-  if (first === "LIKE") return "👍";
-  if (first === "LOVE") return "❤️";
-  if (first === "HAHA") return "😂";
-  if (first === "WOW") return "😮";
-  if (first === "ANGRY") return "😡";
-
-  return "";
-}
 
 export function ChatBubble({
   item,
   isMine,
-  walletId,
-  currentUid,
 }: {
   item: DouviTransaction;
   isMine: boolean;
-  walletId: string;
-  currentUid: string;
 }) {
   const isMoney = item.amount > 0;
   const isIncome = item.type === "INCOME";
 
-  const emoji = reactionEmoji(item.reactions);
+
 
   return (
     <div
@@ -131,43 +102,8 @@ export function ChatBubble({
             <p className="mt-2 text-xs text-[#8A9993]">Tin nhắn</p>
           )}
 
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {["LOVE", "LIKE", "HAHA", "WOW", "ANGRY"].map((reaction) => (
-              <button
-                key={reaction}
-                onClick={() =>
-                  setTransactionReaction({
-                    walletId,
-                    transactionId: item.id,
-                    uid: currentUid,
-                    reaction: reaction as any,
-                  })
-                }
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm shadow-sm transition-all hover:scale-110"
-              >
-                {reaction === "LOVE"
-                  ? "❤️"
-                  : reaction === "LIKE"
-                  ? "👍"
-                  : reaction === "HAHA"
-                  ? "😂"
-                  : reaction === "WOW"
-                  ? "😮"
-                  : "😡"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {emoji && (
-          <div
-            className={`absolute -bottom-3 flex items-center justify-center rounded-full border border-white bg-white px-2 py-1 text-xs shadow-md ${
-              isMine ? "left-4" : "right-4"
-            }`}
-          >
-            {emoji}
-          </div>
-        )}
+      {/* Reaction tạm ẩn trên web để tránh ghi sai dữ liệu Android */}
+      </div>
       </div>
 
       {isMine && (
