@@ -832,7 +832,18 @@ function SettingsTab({
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
   const [settingModal, setSettingModal] = useState<
-  "wallet" | "members" | "invite" | null
+  | "wallet"
+  | "members"
+  | "invite"
+  | "profile"
+  | "security"
+  | "notification"
+  | "appearance"
+  | "currency"
+  | "language"
+  | "help"
+  | "about"
+  | null
 >(null);
   async function copyInviteCode() {
     if (!wallet?.inviteCode) return;
@@ -890,10 +901,10 @@ function SettingsTab({
     />
   ))}
 
-  <div
-    onClick={copyInviteCode}
-    className="flex cursor-pointer items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0"
-  >
+<div
+  onClick={() => setSettingModal("invite")}
+  className="flex cursor-pointer items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0"
+>
     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#FFF4DA] text-xl">
       🔑
     </div>
@@ -919,6 +930,7 @@ function SettingsTab({
           title="Thông tin cá nhân"
           subtitle="Quản lý hồ sơ và tài khoản"
           value=">"
+          onClick={() => setSettingModal("profile")}
         />
 
         <SettingsRow
@@ -926,6 +938,7 @@ function SettingsTab({
           title="Bảo mật"
           subtitle="Đăng nhập, dữ liệu và quyền riêng tư"
           value=">"
+          onClick={() => setSettingModal("security")}
         />
 
         <SettingsRow
@@ -933,6 +946,7 @@ function SettingsTab({
           title="Thông báo"
           subtitle="Quản lý nhắc nhở và thông báo"
           value="Tắt"
+          onClick={() => setSettingModal("notification")}
         />
       </SettingsSection>
 
@@ -942,6 +956,7 @@ function SettingsTab({
           title="Giao diện"
           subtitle="Tùy chỉnh màu sắc và chế độ hiển thị"
           value="Sáng"
+          onClick={() => setSettingModal("appearance")}
         />
 
         <SettingsRow
@@ -949,6 +964,7 @@ function SettingsTab({
           title="Đơn vị tiền tệ"
           subtitle="VND - Việt Nam Đồng"
           value="VND"
+          onClick={() => setSettingModal("currency")}
         />
 
         <SettingsRow
@@ -956,6 +972,7 @@ function SettingsTab({
           title="Ngôn ngữ"
           subtitle="Tiếng Việt"
           value="VI"
+          onClick={() => setSettingModal("language")}
         />
       </SettingsSection>
 
@@ -972,6 +989,7 @@ function SettingsTab({
           title="Trung tâm trợ giúp"
           subtitle="Câu hỏi thường gặp và hỗ trợ"
           value=">"
+          onClick={() => setSettingModal("help")}
         />
 
         <SettingsRow
@@ -979,9 +997,168 @@ function SettingsTab({
           title="Giới thiệu Douvi"
           subtitle="Douvi Web App"
           value="1.0"
+          onClick={() => setSettingModal("about")}
         />
       </SettingsSection>
+      {settingModal && (
+  <SettingsBottomSheet
+    title={
+      settingModal === "wallet"
+        ? "Thông tin ví"
+        : settingModal === "members"
+        ? "Thành viên"
+        : settingModal === "invite"
+        ? "Mã mời"
+        : settingModal === "profile"
+        ? "Thông tin cá nhân"
+        : settingModal === "security"
+        ? "Bảo mật"
+        : settingModal === "notification"
+        ? "Thông báo"
+        : settingModal === "appearance"
+        ? "Giao diện"
+        : settingModal === "currency"
+        ? "Đơn vị tiền tệ"
+        : settingModal === "language"
+        ? "Ngôn ngữ"
+        : settingModal === "help"
+        ? "Trung tâm trợ giúp"
+        : "Giới thiệu Douvi"
+    }
+    onClose={() => setSettingModal(null)}
+  >
+    {settingModal === "wallet" && (
+      <div className="space-y-3">
+        <InfoLine label="Tên ví" value={wallet?.name || "Chưa có ví"} />
+        <InfoLine
+          label="Loại ví"
+          value={wallet?.type === "couple" ? "Ví cặp đôi" : "Ví cá nhân"}
+        />
+        <InfoLine
+          label="Số thành viên"
+          value={`${members.length || wallet?.memberIds.length || 1}`}
+        />
+        <InfoLine label="Wallet ID" value={wallet?.walletId || "---"} />
+      </div>
+    )}
 
+    {settingModal === "members" && (
+      <div className="space-y-3">
+        {members.length === 0 ? (
+          <p className="text-sm text-[#62736D]">
+            Chưa tải được danh sách thành viên.
+          </p>
+        ) : (
+          members.map((member) => (
+            <div
+              key={member.userId}
+              className="flex items-center gap-3 rounded-[22px] bg-[#F8FBF9] p-3"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E4F7F0] font-black text-[#168768]">
+                {member.displayName?.charAt(0)?.toUpperCase() || "D"}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-black text-[#17231F]">
+                  {member.displayName}
+                </p>
+                <p className="text-sm text-[#62736D]">
+                  {member.role === "owner" ? "Chủ ví" : "Thành viên"}
+                </p>
+              </div>
+
+              {member.userId === user.uid && (
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#168768]">
+                  Bạn
+                </span>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    )}
+
+    {settingModal === "invite" && (
+      <div className="space-y-4">
+        <div className="rounded-[24px] bg-[#F8FBF9] p-5 text-center">
+          <p className="text-sm font-bold text-[#62736D]">Mã mời ví đôi</p>
+          <p className="mt-2 text-3xl font-black tracking-widest text-[#168768]">
+            {wallet?.inviteCode || "---"}
+          </p>
+        </div>
+
+        <button
+          onClick={copyInviteCode}
+          disabled={!wallet?.inviteCode}
+          className="w-full rounded-[20px] bg-[#168768] py-3 font-black text-white disabled:opacity-40"
+        >
+          Copy mã mời
+        </button>
+      </div>
+    )}
+
+    {settingModal === "profile" && (
+      <div className="space-y-3">
+        <InfoLine label="Tên hiển thị" value={user?.displayName || "Người dùng"} />
+        <InfoLine label="Email" value={user?.email || "Chưa có email"} />
+        <InfoLine label="UID" value={user?.uid || "---"} />
+      </div>
+    )}
+
+    {settingModal === "security" && (
+      <div className="space-y-3">
+        <InfoLine label="Đăng nhập" value="Google Firebase Auth" />
+        <InfoLine label="Trạng thái" value="Đang bảo vệ dữ liệu theo tài khoản" />
+        <InfoLine label="Ghi chú" value="Không chia sẻ mã mời ví đôi cho người lạ." />
+      </div>
+    )}
+
+    {settingModal === "notification" && (
+      <div className="space-y-3">
+        <InfoLine label="Thông báo web" value="Đang phát triển" />
+        <InfoLine label="Nhắc ghi chi tiêu" value="Sẽ đồng bộ với app Android sau" />
+      </div>
+    )}
+
+    {settingModal === "appearance" && (
+      <div className="space-y-3">
+        <InfoLine label="Chế độ" value="Sáng" />
+        <InfoLine label="Màu chính" value="#168768" />
+        <InfoLine label="Dark mode" value="Sẽ thêm ở bước sau" />
+      </div>
+    )}
+
+    {settingModal === "currency" && (
+      <div className="space-y-3">
+        <InfoLine label="Đơn vị tiền tệ" value="VND - Việt Nam Đồng" />
+        <InfoLine label="Định dạng" value="1.000.000đ" />
+      </div>
+    )}
+
+    {settingModal === "language" && (
+      <div className="space-y-3">
+        <InfoLine label="Ngôn ngữ hiện tại" value="Tiếng Việt" />
+        <InfoLine label="English" value="Sẽ thêm khi hoàn thiện đa ngôn ngữ" />
+      </div>
+    )}
+
+    {settingModal === "help" && (
+      <div className="space-y-3">
+        <InfoLine label="Cách ghi chi" value="Gõ: ăn sáng 50k, đi chợ 100k, đổ xăng 70k" />
+        <InfoLine label="Cách ghi thu" value="Gõ: lương 10tr, nhận thưởng 500k" />
+        <InfoLine label="Ví đôi" value="Một người tạo ví, người còn lại nhập mã mời." />
+      </div>
+    )}
+
+    {settingModal === "about" && (
+      <div className="space-y-3">
+        <InfoLine label="Tên ứng dụng" value="Douvi Web App" />
+        <InfoLine label="Phiên bản" value="1.0.0" />
+        <InfoLine label="Mục tiêu" value="Ví chat realtime cho cá nhân và cặp đôi." />
+      </div>
+    )}
+  </SettingsBottomSheet>
+)}
       <button
         onClick={() => auth.signOut()}
         className="w-full rounded-[22px] border border-red-200 bg-white py-4 font-black text-red-500 shadow-sm"
@@ -1049,7 +1226,45 @@ function SettingsRow({
     </div>
   );
 }
+function SettingsBottomSheet({
+  title,
+  children,
+  onClose,
+}: {
+  title: string;
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end bg-black/30">
+      <div className="w-full rounded-t-[32px] bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+16px)] shadow-2xl">
+        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#DDEAE4]" />
 
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-black text-[#17231F]">{title}</h2>
+
+          <button
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2F8F5] font-black text-[#62736D]"
+          >
+            ×
+          </button>
+        </div>
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[20px] bg-[#F8FBF9] p-4">
+      <p className="text-xs font-bold text-[#8A9993]">{label}</p>
+      <p className="mt-1 break-all font-black text-[#17231F]">{value}</p>
+    </div>
+  );
+}
 function TransactionList({
   transactions,
   walletId,
