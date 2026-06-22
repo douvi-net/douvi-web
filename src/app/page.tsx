@@ -214,12 +214,13 @@ export default function HomePage() {
 )}
 
 {!walletLoading && !appError && activeTab === "home" && (
- <HomeTab
- user={user}
- wallets={wallets}
- selectedWalletId={selectedWalletId}
- transactions={transactions}
- onCreatePersonalWallet={handleCreatePersonalWallet}
+  <HomeTab
+  user={user}
+  wallets={wallets}
+  selectedWalletId={selectedWalletId}
+  transactions={transactions}
+  onCreatePersonalWallet={handleCreatePersonalWallet}
+  onChangeTab={setActiveTab}
 />
 )}
 
@@ -285,12 +286,14 @@ function HomeTab({
   selectedWalletId,
   transactions,
   onCreatePersonalWallet,
+  onChangeTab,
 }: {
   user: any;
   wallets: DouviWallet[];
   selectedWalletId: string;
   transactions: DouviTransaction[];
   onCreatePersonalWallet: () => Promise<void>;
+  onChangeTab: (tab: string) => void;
 }) {
   const selectedWallet = wallets.find(
     (w) => w.walletId === selectedWalletId
@@ -374,12 +377,10 @@ function HomeTab({
         </div>
       </section>
 
-      <section className="grid grid-cols-4 gap-3">
-        <QuickAction icon="💬" label="Ví Chat" />
-        <QuickAction icon="👛" label="Ví" />
-        <QuickAction icon="📊" label="Thống kê" />
-        <QuickAction icon="⚙️" label="Cài đặt" />
-      </section>
+      <QuickAction icon="💬" label="Ví Chat" onClick={() => onChangeTab("chat")} />
+<QuickAction icon="👛" label="Ví" onClick={() => onChangeTab("wallet")} />
+<QuickAction icon="📊" label="Thống kê" onClick={() => onChangeTab("summary")} />
+<QuickAction icon="⚙️" label="Cài đặt" onClick={() => onChangeTab("settings")} />
 
       <section className="grid grid-cols-2 gap-3">
         <MiniInsightCard
@@ -506,12 +507,17 @@ function HomeTab({
 function QuickAction({
   icon,
   label,
+  onClick,
 }: {
   icon: string;
   label: string;
+  onClick: () => void;
 }) {
   return (
-    <button className="rounded-[24px] bg-white p-4 shadow-sm transition-all active:scale-95">
+    <button
+  onClick={onClick}
+  className="rounded-[24px] bg-white p-4 shadow-sm transition-all active:scale-95"
+>
       <div className="text-2xl">{icon}</div>
 
       <p className="mt-2 text-xs font-black text-[#17231F]">
@@ -562,7 +568,9 @@ function ChatTab({
   transactions: DouviTransaction[];
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
-
+  const [settingModal, setSettingModal] = useState<
+  "wallet" | "members" | "invite" | null
+>(null);
   return (
     <main className="flex h-[calc(100vh-130px)] flex-col">
       <div
@@ -858,6 +866,7 @@ function SettingsTab({
   <SettingsRow
     icon="👛"
     title="Thông tin ví"
+    onClick={() => setSettingModal("wallet")}
     subtitle={wallet?.name || "Chưa có ví"}
     value={wallet?.type === "couple" ? "Ví đôi" : "Cá nhân"}
   />
@@ -865,6 +874,7 @@ function SettingsTab({
   <SettingsRow
     icon="👥"
     title="Thành viên"
+    onClick={() => setSettingModal("members")}
     subtitle={`${members.length || wallet?.memberIds.length || 1} thành viên`}
     value="Xem"
   />
@@ -1013,7 +1023,12 @@ function SettingsRow({
   value?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0">
+    <div
+  onClick={onClick}
+  className={`flex items-center gap-3 border-b border-[#EEF5F1] p-4 last:border-b-0 ${
+    onClick ? "cursor-pointer active:bg-[#F8FBF9]" : ""
+  }`}
+>
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#E4F7F0] text-xl">
         {icon}
       </div>
