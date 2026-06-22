@@ -568,9 +568,7 @@ function ChatTab({
   transactions: DouviTransaction[];
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
-  const [settingModal, setSettingModal] = useState<
-  "wallet" | "members" | "invite" | null
->(null);
+ 
   return (
     <main className="flex h-[calc(100vh-130px)] flex-col">
       <div
@@ -833,6 +831,9 @@ function SettingsTab({
   selectedWalletId: string;
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
+  const [settingModal, setSettingModal] = useState<
+  "wallet" | "members" | "invite" | null
+>(null);
   async function copyInviteCode() {
     if (!wallet?.inviteCode) return;
   
@@ -1016,11 +1017,13 @@ function SettingsRow({
   title,
   subtitle,
   value,
+  onClick,
 }: {
   icon: string;
   title: string;
   subtitle: string;
   value?: string;
+  onClick?: () => void;
 }) {
   return (
     <div
