@@ -1121,7 +1121,7 @@ function SettingsTab({
         </div>
 
         <button
-          onClick={copyInviteCode}
+         onClick={() => setSettingModal("invite")}
           disabled={!wallet?.inviteCode}
           className="w-full rounded-[20px] bg-[#168768] py-3 font-black text-white disabled:opacity-40"
         >
@@ -1645,4 +1645,5 @@ function DouviErrorCard({
       </div>
     </div>
   );
+  
 }
