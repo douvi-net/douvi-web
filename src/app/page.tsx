@@ -1,7 +1,7 @@
 "use client";
 
 import { onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
 import {
   DouviWallet,
@@ -568,7 +568,14 @@ function ChatTab({
   transactions: DouviTransaction[];
 }) {
   const wallet = wallets.find((w) => w.walletId === selectedWalletId);
- 
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [transactions.length]);
   return (
     <main className="flex h-[calc(100vh-130px)] flex-col">
       <div
@@ -614,27 +621,40 @@ function ChatTab({
           backgroundColor: "#F8FBF9",
         }}
       >
-        {transactions.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#EAF6F2] text-4xl">
-              💬
-            </div>
+       {transactions.length === 0 ? (
+  <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+    <div className="relative">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#EAF6F2] text-5xl shadow-sm">
+        💬
+      </div>
 
-            <h3 className="mt-5 text-xl font-black text-[#17231F]">
-              Chưa có giao dịch
-            </h3>
+      <div className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow-sm">
+        💚
+      </div>
+    </div>
 
-            <p className="mt-2 text-sm leading-relaxed text-[#62736D]">
-              Hãy thử nhắn như đang chat:
-              <br />
-              “ăn sáng 50k”
-              <br />
-              “đổ xăng 100k”
-              <br />
-              “lương tháng 10tr”
-            </p>
+    <h3 className="mt-6 text-2xl font-black text-[#17231F]">
+      Bắt đầu ghi thu chi
+    </h3>
+
+    <p className="mt-2 max-w-[280px] text-sm leading-relaxed text-[#62736D]">
+      Nhắn như đang chat, Douvi sẽ tự hiểu đó là khoản thu, khoản chi hoặc tin nhắn.
+    </p>
+
+    <div className="mt-5 grid w-full max-w-[320px] grid-cols-1 gap-2">
+      {["ăn sáng 50k", "đổ xăng 100k", "đi chợ 200k", "lương 10tr"].map(
+        (sample) => (
+          <div
+            key={sample}
+            className="rounded-[20px] bg-white px-4 py-3 text-left text-sm font-bold text-[#17231F] shadow-sm"
+          >
+            {sample}
           </div>
-        ) : (
+        )
+      )}
+    </div>
+  </div>
+) : (
           <div className="space-y-3">
             {transactions.map((item) => (
               <ChatBubble
@@ -645,6 +665,19 @@ function ChatTab({
                 isMine={item.createdByUid === user.uid}
               />
             ))}
+            <div className="space-y-3">
+  {transactions.map((item) => (
+    <ChatBubble
+      key={item.id}
+      item={item}
+      walletId={selectedWalletId}
+      currentUid={user.uid}
+      isMine={item.createdByUid === user.uid}
+    />
+  ))}
+
+  <div ref={bottomRef} />
+</div>
           </div>
         )}
       </div>
